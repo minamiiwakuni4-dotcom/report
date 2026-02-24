@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>授業報告作成ツール (iPad版)</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --good-color: #2ecc71;
+            --middle-color: #f1c40f;
+            --bad-color: #e74c3c;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --border-color: #d1d8e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        .section-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        /* 共通ボタンベース */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 15px 10px;
+            border: 2px solid var(--border-color);
+            background: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #7f8c8d;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 教科ボタンの選択色 */
+        .subject-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 評価ボタンの選択色 */
+        .eval-btn[data-val="good"].active { background: var(--good-color); color: white; border-color: var(--good-color); }
+        .eval-btn[data-val="middle"].active { background: var(--middle-color); color: white; border-color: var(--middle-color); }
+        .eval-btn[data-val="bad"].active { background: var(--bad-color); color: white; border-color: var(--bad-color); }
+
+        /* 自由メモ */
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+
+        /* 生成結果エリア */
+        #output {
+            background: #fffef0;
+            border: 2px solid #f39c12;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-main {
+            flex: 2;
+            padding: 18px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-sub {
+            flex: 1;
+            padding: 18px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        /* iPad向けの微調整（横向きなどの時） */
+        @media (max-width: 480px) {
+            .choice-btn { font-size: 0.9rem; padding: 12px 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>授業報告作成 (iPad)</h1>
+
+    <span class="section-label">1. 教科を選択</span>
+    <div class="btn-group" id="subject-group">
+        <button class="choice-btn subject-btn active" onclick="setSubject('english')">英語</button>
+        <button class="choice-btn subject-btn" onclick="setSubject('math')">数学</button>
+        <button class="choice-btn subject-btn" onclick="setSubject('japanese')">国語</button>
+        <button class="choice-btn subject-btn" onclick="setSubject('science')">理科</button>
+        <button class="choice-btn subject-btn" onclick="setSubject('social')">社会</button>
+    </div>
+
+    <span class="section-label" id="label1">理解度</span>
+    <div class="btn-group" data-item="1">
+        <button class="choice-btn eval-btn active" data-val="good" onclick="setEval(1, 'good')">good</button>
+        <button class="choice-btn eval-btn" data-val="middle" onclick="setEval(1, 'middle')">middle</button>
+        <button class="choice-btn eval-btn" data-val="bad" onclick="setEval(1, 'bad')">bad</button>
+    </div>
+
+    <span class="section-label" id="label2">集中度</span>
+    <div class="btn-group" data-item="2">
+        <button class="choice-btn eval-btn active" data-val="good" onclick="setEval(2, 'good')">good</button>
+        <button class="choice-btn eval-btn" data-val="middle" onclick="setEval(2, 'middle')">middle</button>
+        <button class="choice-btn eval-btn" data-val="bad" onclick="setEval(2, 'bad')">bad</button>
+    </div>
+
+    <span class="section-label" id="label3">語彙</span>
+    <div class="btn-group" data-item="3">
+        <button class="choice-btn eval-btn active" data-val="good" onclick="setEval(3, 'good')">good</button>
+        <button class="choice-btn eval-btn" data-val="middle" onclick="setEval(3, 'middle')">middle</button>
+        <button class="choice-btn eval-btn" data-val="bad" onclick="setEval(3, 'bad')">bad</button>
+    </div>
+
+    <span class="section-label" id="label4">文法</span>
+    <div class="btn-group" data-item="4">
+        <button class="choice-btn eval-btn active" data-val="good" onclick="setEval(4, 'good')">good</button>
+        <button class="choice-btn eval-btn" data-val="middle" onclick="setEval(4, 'middle')">middle</button>
+        <button class="choice-btn eval-btn" data-val="bad" onclick="setEval(4, 'bad')">bad</button>
+    </div>
+
+    <span class="section-label">自由メモ（任意）</span>
+    <textarea id="memo" rows="2" placeholder="例：宿題忘れなど。文章の末尾に「また、〜」と繋がります。" oninput="generate()"></textarea>
+
+    <span class="section-label">最終コメント（コピーして貼り付け）</span>
+    <textarea id="output" rows="8"></textarea>
+
+    <div class="action-btns">
+        <button class="btn-main" onclick="copyToClipboard()">コピーして完了</button>
+        <button class="btn-sub" onclick="resetForm()">リセット</button>
+    </div>
+</div>
+
+<div id="toast" class="toast">コピーしました</div>
+
+<script>
+/**
+ * ------------------------------------------
+ * 文言データマスタ
+ * ------------------------------------------
+ */
+const DATA = {
+    common: {
+        item1: { good: "内容の理解は良好で、学習内容をしっかり吸収できていました。", middle: "内容は概ね理解できていますが、一部確認しながら進めるとさらに安定します。", bad: "内容理解に課題が見られるため、基本事項の確認を中心に進めます。" },
+        item2: { good: "授業中の集中も安定しており、取り組み姿勢がとても良かったです。", middle: "概ね集中して取り組めていますが、場面によって波があるため声かけで安定を図ります。", bad: "集中が続きにくい場面があったため、短い区切りを意識しながら取り組めるようにします。" }
+    },
+    subjects: {
+        english: {
+            item3: { name: "語彙", good: "語彙面はよく定着しており、既習語を活用できていました。", middle: "語彙は少しずつ定着していますが、反復確認でさらに安定します。", bad: "語彙の定着が弱いため、基本語の反復確認を優先したいです。" },
+            item4: { name: "文法", good: "文法事項はよく理解できており、問題でも安定して使えていました。", middle: "文法は理解できている部分もありますが、使い分けに確認が必要です。", bad: "文法の基礎に課題があるため、用法の確認と例文練習を優先したいです。" }
+        },
+        math: {
+            item3: { name: "計算力", good: "計算は安定しており、正確に処理できていました。", middle: "計算は概ねできていますが、符号や途中処理で確認が必要な場面がありました。", bad: "計算の基礎に課題が見られるため、基本問題の反復で定着を図ります。" },
+            item4: { name: "思考過程", good: "思考過程が整理されており、解き方の流れを適切に組み立てられていました。", middle: "考え方はつかめていますが、途中の整理や方針の立て方に確認が必要です。", bad: "思考過程の組み立てに課題があるため、解法の型を確認しながら進めます。" }
+        },
+        japanese: {
+            item3: { name: "語彙・表現", good: "語彙・表現の理解は良好で、本文内容の把握にも活かせていました。", middle: "語彙・表現は概ね理解できていますが、文脈に応じた捉え方に確認が必要です。", bad: "語彙・表現の理解に課題があるため、本文中の言葉の意味確認を丁寧に進めます。" },
+            item4: { name: "記述", good: "記述は要点を押さえており、根拠を意識した表現ができていました。", middle: "記述はできていますが、根拠の示し方や表現の整理に改善の余地があります。", bad: "記述に課題が見られるため、設問の意図確認と根拠の拾い方から練習します。" }
+        },
+        science: {
+            item3: { name: "用語定着", good: "用語の定着は良好で、重要語句を正確に使えていました。", middle: "用語は概ね押さえられていますが、似た語句の整理に確認が必要です。", bad: "重要語句の定着が不十分なため、基本用語の反復確認を中心に進めます。" },
+            item4: { name: "記述・説明", good: "記述・説明は要点を押さえており、用語を使って適切に表現できていました。", middle: "説明は概ねできていますが、因果関係の説明や用語の使い方に確認が必要です。", bad: "記述・説明に課題があるため、用語確認と短い説明練習を重ねていきます。" }
+        },
+        social: {
+            item3: { name: "用語定着", good: "用語の定着は良好で、重要語句を適切に使えていました。", middle: "用語は概ね押さえられていますが、類似語句の整理が必要です。", bad: "重要語句の定着が不十分なため、反復確認を中心に進めます。" },
+            item4: { name: "記述力", good: "記述力は良好で、要点を押さえて簡潔にまとめることができていました。", middle: "記述は概ねできていますが、語句の使い方や要点整理に確認が必要です。", bad: "記述力に課題があるため、キーワードを使った短文記述から定着を図ります。" }
+        }
+    },
+    overall: { 8: "全体として非常に良い取り組みができました。", 6: "全体として良い取り組みができました。", 4: "全体として概ね良く取り組めています。", 2: "全体として課題はありますが、確認しながら進めていける状態です。", 0: "全体として基礎事項の確認を優先しながら進める必要があります。" },
+    closing: { high: "この調子で、次回は正確さとスピードの両立を目指していきます。", mid: "できている点を活かしながら、確認が必要な点を一つずつ整理していきます。", low: "基礎の確認を丁寧に行いながら、できる部分を増やしていきます。" }
+};
+
+/**
+ * 状態管理
+ */
+let currentSubject = 'english';
+let currentEval = { 1: 'good', 2: 'good', 3: 'good', 4: 'good' };
+
+/**
+ * 教科の切り替え
+ */
+function setSubject(subKey) {
+    currentSubject = subKey;
+    
+    // ボタンのスタイル更新
+    const buttons = document.querySelectorAll('.subject-btn');
+    buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.innerText === getSubjectName(subKey));
+    });
+
+    // ラベルの更新
+    document.getElementById('label3').innerText = DATA.subjects[subKey].item3.name;
+    document.getElementById('label4').innerText = DATA.subjects[subKey].item4.name;
+    
+    generate();
+}
+
+function getSubjectName(key) {
+    const names = { english:'英語', math:'数学', japanese:'国語', science:'理科', social:'社会' };
+    return names[key];
+}
+
+/**
+ * 評価の切り替え
+ */
+function setEval(itemNum, value) {
+    currentEval[itemNum] = value;
+    
+    const buttons = document.querySelectorAll(`.btn-group[data-item="${itemNum}"] .eval-btn`);
+    buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-val') === value);
+    });
+    
+    generate();
+}
+
+/**
+ * コメント生成
+ */
+function generate() {
+    const memo = document.getElementById('memo').value.trim();
+    const scoreMap = { good: 2, middle: 1, bad: 0 };
+    const total = scoreMap[currentEval[1]] + scoreMap[currentEval[2]] + scoreMap[currentEval[3]] + scoreMap[currentEval[4]];
+
+    // 1. 全体評価
+    let head = "";
+    if(total >= 8) head = DATA.overall[8];
+    else if(total >= 6) head = DATA.overall[6];
+    else if(total >= 4) head = DATA.overall[4];
+    else if(total >= 2) head = DATA.overall[2];
+    else head = DATA.overall[0];
+
+    // 2. 本文
+    const b1 = DATA.common.item1[currentEval[1]];
+    const b2 = DATA.common.item2[currentEval[2]];
+    const b3 = DATA.subjects[currentSubject].item3[currentEval[3]];
+    const b4 = DATA.subjects[currentSubject].item4[currentEval[4]];
+
+    // 3. 締め
+    let foot = "";
+    if(total >= 6) foot = DATA.closing.high;
+    else if(total >= 3) foot = DATA.closing.mid;
+    else foot = DATA.closing.low;
+
+    // 結合
+    let res = `${head}\n${b1}${b2}${b3}${b4}`;
+    if(memo) res += `\nまた、${memo}`;
+    res += `\n${foot}`;
+
+    document.getElementById('output').value = res;
+}
+
+/**
+ * 便利機能
+ */
+function copyToClipboard() {
+    const output = document.getElementById('output');
+    output.select();
+    output.setSelectionRange(0, 99999); // スマホ用
+    document.execCommand('copy');
+    
+    const toast = document.getElementById('toast');
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+}
+
+function resetForm() {
+    if(confirm("入力をリセットしてよろしいですか？")) location.reload();
+}
+
+// 初期化
+generate();
+</script>
+</body>
+</html>
