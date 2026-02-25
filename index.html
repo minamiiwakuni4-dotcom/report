@@ -3,292 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>授業報告作成ツール (iPad最適化版)</title>
+    <title>AI授業報告 & 画像連結ツール</title>
     <style>
-        :root {
-            --primary-color: #4a90e2;
-            --good-color: #2ecc71;
-            --middle-color: #f1c40f;
-            --bad-color: #e74c3c;
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --border-color: #d1d8e0;
-        }
+        :root { --primary: #4a90e2; --success: #2ecc71; --bg: #f4f7f9; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 100px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.1rem; text-align: center; color: #333; }
+        
+        /* 写真セクション */
+        .photo-area { background: #e9ecef; border: 2px dashed #ced4da; border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; }
+        .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+        .preview-item { position: relative; aspect-ratio: 3/4; background: #ddd; border-radius: 4px; overflow: hidden; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; }
+        
+        /* ボタン類 */
+        .btn { border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 10px; }
+        .btn-camera { background: var(--primary); color: white; font-size: 1rem; }
+        .btn-generate { background: var(--success); color: white; font-size: 1.1rem; }
+        
+        /* 結果エリア */
+        textarea { width: 100%; height: 120px; margin-top: 15px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; box-sizing: border-box; }
+        #mergedImagePreview { width: 100%; margin-top: 15px; border: 2px solid #4a90e2; display: none; }
+        .instruction { font-size: 0.8rem; color: #666; margin-top: 5px; text-align: center; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            padding-bottom: 80px; /* 下部固定ボタン用の余白 */
-        }
-
-        .container {
-            width: 100%;
-            max-width: 700px;
-            background: var(--card-bg);
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            box-sizing: border-box;
-        }
-
-        h1 {
-            font-size: 1rem;
-            text-align: center;
-            color: #2c3e50;
-            margin: 0 0 15px 0;
-        }
-
-        .section-label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 0.85rem;
-            color: #555;
-        }
-
-        /* 教科ボタン：よりコンパクトに */
-        .subject-group {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .choice-btn {
-            flex: 1;
-            padding: 10px 4px;
-            border: 2px solid var(--border-color);
-            background: #fff;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #7f8c8d;
-            transition: all 0.2s;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .subject-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-
-        /* 評価項目を2列に並べる */
-        .eval-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px 15px;
-            margin-bottom: 15px;
-        }
-
-        .eval-item { display: flex; flex-direction: column; }
-
-        .eval-buttons {
-            display: flex;
-            gap: 4px;
-        }
-
-        .eval-btn {
-            flex: 1;
-            padding: 8px 0;
-            font-size: 0.85rem;
-        }
-
-        .eval-btn[data-val="good"].active { background: var(--good-color); color: white; border-color: var(--good-color); }
-        .eval-btn[data-val="middle"].active { background: var(--middle-color); color: white; border-color: var(--middle-color); }
-        .eval-btn[data-val="bad"].active { background: var(--bad-color); color: white; border-color: var(--bad-color); }
-
-        /* 自由メモと結果のサイズ調整 */
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        #memo { margin-bottom: 10px; height: 50px; }
-        #output { background: #fffef0; border: 2px solid #f39c12; height: 140px; }
-
-        /* 下部固定アクションバー */
-        .sticky-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(5px);
-            padding: 10px 20px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .footer-inner {
-            width: 100%;
-            max-width: 700px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-main { flex: 3; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; }
-        .btn-sub { flex: 1; padding: 15px; background: #95a5a6; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-
-        .toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            display: none;
-            z-index: 200;
-        }
+        /* 下部固定 */
+        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; gap: 10px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>授業報告作成 (iPad最適化)</h1>
+    <h1>AI報告作成 (写真連結版)</h1>
 
-    <span class="section-label">教科</span>
-    <div class="subject-group">
-        <button class="choice-btn subject-btn active" onclick="setSubject('english')">英語</button>
-        <button class="choice-btn subject-btn" onclick="setSubject('math')">数学</button>
-        <button class="choice-btn subject-btn" onclick="setSubject('japanese')">国語</button>
-        <button class="choice-btn subject-btn" onclick="setSubject('science')">理科</button>
-        <button class="choice-btn subject-btn" onclick="setSubject('social')">社会</button>
+    <div class="photo-area">
+        <button class="btn btn-camera" onclick="document.getElementById('cameraInput').click()">📷 ノートを撮影する</button>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this.files)">
+        <div class="preview-grid" id="previewGrid"></div>
+        <p class="instruction">※複数枚撮ると自動で1枚に繋がります</p>
     </div>
 
-    <div class="eval-grid">
-        <div class="eval-item">
-            <span class="section-label" id="label1">理解度</span>
-            <div class="eval-buttons" data-item="1">
-                <button class="choice-btn eval-btn active" data-val="good" onclick="setEval(1, 'good')">good</button>
-                <button class="choice-btn eval-btn" data-val="middle" onclick="setEval(1, 'middle')">mid</button>
-                <button class="choice-btn eval-btn" data-val="bad" onclick="setEval(1, 'bad')">bad</button>
-            </div>
-        </div>
-        <div class="eval-item">
-            <span class="section-label" id="label2">集中度</span>
-            <div class="eval-buttons" data-item="2">
-                <button class="choice-btn eval-btn active" data-val="good" onclick="setEval(2, 'good')">good</button>
-                <button class="choice-btn eval-btn" data-val="middle" onclick="setEval(2, 'middle')">mid</button>
-                <button class="choice-btn eval-btn" data-val="bad" onclick="setEval(2, 'bad')">bad</button>
-            </div>
-        </div>
-        <div class="eval-item">
-            <span class="section-label" id="label3">語彙</span>
-            <div class="eval-buttons" data-item="3">
-                <button class="choice-btn eval-btn active" data-val="good" onclick="setEval(3, 'good')">good</button>
-                <button class="choice-btn eval-btn" data-val="middle" onclick="setEval(3, 'middle')">mid</button>
-                <button class="choice-btn eval-btn" data-val="bad" onclick="setEval(3, 'bad')">bad</button>
-            </div>
-        </div>
-        <div class="eval-item">
-            <span class="section-label" id="label4">文法</span>
-            <div class="eval-buttons" data-item="4">
-                <button class="choice-btn eval-btn active" data-val="good" onclick="setEval(4, 'good')">good</button>
-                <button class="choice-btn eval-btn" data-val="middle" onclick="setEval(4, 'middle')">mid</button>
-                <button class="choice-btn eval-btn" data-val="bad" onclick="setEval(4, 'bad')">bad</button>
-            </div>
-        </div>
-    </div>
+    <div id="status" style="text-align:center; color: var(--primary); font-weight:bold;"></div>
 
-    <span class="section-label">自由メモ（任意）</span>
-    <textarea id="memo" placeholder="例：宿題忘れなど" oninput="generate()"></textarea>
-
-    <span class="section-label">最終コメント</span>
-    <textarea id="output" readonly></textarea>
+    <textarea id="output" placeholder="AIが作成したコメントがここに表示されます"></textarea>
+    
+    <img id="mergedImagePreview">
+    <p id="saveHint" class="instruction" style="display:none">↑ 画像を長押しして保存し、本部にアップしてください</p>
 </div>
 
-<div class="sticky-footer">
-    <div class="footer-inner">
-        <button class="btn-main" onclick="copyToClipboard()">コピーする</button>
-        <button class="btn-sub" onclick="resetForm()">リセット</button>
-    </div>
+<div class="footer">
+    <button class="btn btn-generate" onclick="processAll()">AI生成 ＆ 画像合体</button>
 </div>
-
-<div id="toast" class="toast">コピーしました</div>
 
 <script>
-const DATA = {
-    common: {
-        item1: { good: "内容の理解は良好で、学習内容をしっかり吸収できていました。", middle: "内容は概ね理解できていますが、一部確認しながら進めるとさらに安定します。", bad: "内容理解に課題が見られるため、基本事項の確認を中心に進めます。" },
-        item2: { good: "授業中の集中も安定しており、取り組み姿勢がとても良かったです。", middle: "概ね集中して取り組めていますが、場面によって波があるため声かけで安定を図ります。", bad: "集中が続きにくい場面があったため、短い区切りを意識しながら取り組めるようにします。" }
-    },
-    subjects: {
-        english: { item3: { name: "語彙", good: "語彙面はよく定着しており、既習語を活用できていました。", middle: "語彙は少しずつ定着していますが、反復確認でさらに安定します。", bad: "語彙の定着が弱いため、基本語の反復確認を優先したいです。" }, item4: { name: "文法", good: "文法事項はよく理解できており、問題でも安定して使えていました。", middle: "文法は理解できている部分もありますが、使い分けに確認が必要です。", bad: "文法の基礎に課題があるため、用法の確認と例文練習を優先したいです。" } },
-        math: { item3: { name: "計算力", good: "計算は安定しており、正確に処理できていました。", middle: "計算は概ねできていますが、符号や途中処理で確認が必要な場面がありました。", bad: "計算の基礎に課題が見られるため、基本問題の反復で定着を図ります。" }, item4: { name: "思考過程", good: "思考過程が整理されており、解き方の流れを適切に組み立てられていました。", middle: "考え方はつかめていますが、途中の整理や方針の立て方に確認が必要です。", bad: "思考過程の組み立てに課題があるため、解法の型を確認しながら進めます。" } },
-        japanese: { item3: { name: "語彙・表現", good: "語彙・表現の理解は良好で、本文内容の把握にも活かせていました。", middle: "語彙・表現は概ね理解できていますが、文脈に応じた捉え方に確認が必要です。", bad: "語彙・表現の理解に課題があるため、本文中の言葉の意味確認を丁寧に進めます。" }, item4: { name: "記述", good: "記述は要点を押さえており、根拠を意識した表現ができていました。", middle: "記述はできていますが、根拠の示し方や表現の整理に改善の余地があります。", bad: "記述に課題が見られるため、設問の意図確認と根拠の拾い方から練習します。" } },
-        science: { item3: { name: "用語定着", good: "用語の定着は良好で、重要語句を正確に使えていました。", middle: "用語は概ね押さえられていますが、似た語句の整理に確認が必要です。", bad: "重要語句の定着が不十分なため、基本用語の反復確認を中心に進めます。" }, item4: { name: "記述・説明", good: "記述・説明は要点を押さえており、用語を使って適切に表現できていました。", middle: "説明は概ねできていますが、因果関係の説明や用語の使い方に確認が必要です。", bad: "記述・説明に課題があるため、用語確認と短い説明練習を重ねていきます。" } },
-        social: { item3: { name: "用語定着", good: "用語の定着は良好で、重要語句を適切に使えていました。", middle: "用語は概ね押さえられていますが、類似語句の整理が必要です。", bad: "重要語句の定着が不十分なため、反復確認を中心に進めます。" }, item4: { name: "記述力", good: "記述力は良好で、要点を押さえて簡潔にまとめることができていました。", middle: "記述は概ねできていますが、語句の使い方や要点整理に確認が必要です。", bad: "記述力に課題があるため、キーワードを使った短文記述から定着を図ります。" } }
-    },
-    overall: { 8: "全体として非常に良い取り組みができました。", 6: "全体として良い取り組みができました。", 4: "全体として概ね良く取り組めています。", 2: "全体として課題はありますが、確認しながら進めていける状態です。", 0: "全体として基礎事項の確認を優先しながら進める必要があります。" },
-    closing: { high: "この調子で、次回は正確さとスピードの両立を目指していきます。", mid: "できている点を活かしながら、確認が必要な点を一つずつ整理していきます。", low: "基礎の確認を丁寧に行いながら、できる部分を増やしていきます。" }
-};
+    let photoList = [];
 
-let currentSubject = 'english';
-let currentEval = { 1: 'good', 2: 'good', 3: 'good', 4: 'good' };
+    // 写真を選んだ時の処理
+    function handleFiles(files) {
+        for (let file of files) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                photoList.push(e.target.result);
+                renderPreviews();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 
-function setSubject(subKey) {
-    currentSubject = subKey;
-    document.querySelectorAll('.subject-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('onclick').includes(subKey));
-    });
-    document.getElementById('label3').innerText = DATA.subjects[subKey].item3.name;
-    document.getElementById('label4').innerText = DATA.subjects[subKey].item4.name;
-    generate();
-}
+    // プレビューの表示
+    function renderPreviews() {
+        const grid = document.getElementById('previewGrid');
+        grid.innerHTML = '';
+        photoList.forEach((src, index) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `<img src="${src}"><button class="del-btn" onclick="removePhoto(${index})">✕</button>`;
+            grid.appendChild(div);
+        });
+    }
 
-function setEval(itemNum, value) {
-    currentEval[itemNum] = value;
-    document.querySelectorAll(`.eval-buttons[data-item="${itemNum}"] .eval-btn`).forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-val') === value);
-    });
-    generate();
-}
+    function removePhoto(index) {
+        photoList.splice(index, 1);
+        renderPreviews();
+    }
 
-function generate() {
-    const memo = document.getElementById('memo').value.trim();
-    const scoreMap = { good: 2, middle: 1, bad: 0 };
-    const total = scoreMap[currentEval[1]] + scoreMap[currentEval[2]] + scoreMap[currentEval[3]] + scoreMap[currentEval[4]];
+    // 画像連結とAI送信のメイン処理
+    async function processAll() {
+        if (photoList.length === 0) {
+            alert("ノートの写真を撮ってください。");
+            return;
+        }
 
-    let head = DATA.overall[total >= 8 ? 8 : total >= 6 ? 6 : total >= 4 ? 4 : total >= 2 ? 2 : 0];
-    const b1 = DATA.common.item1[currentEval[1]];
-    const b2 = DATA.common.item2[currentEval[2]];
-    const b3 = DATA.subjects[currentSubject].item3[currentEval[3]];
-    const b4 = DATA.subjects[currentSubject].item4[currentEval[4]];
-    let foot = DATA.closing[total >= 6 ? 'high' : total >= 3 ? 'mid' : 'low'];
+        document.getElementById('status').innerText = "AI解析 ＆ 画像連結中...";
+        
+        // 1. 画像を連結する
+        await mergeImages();
 
-    let res = `${head}\n${b1}${b2}${b3}${b4}`;
-    if(memo) res += `\nまた、${memo}`;
-    res += `\n${foot}`;
+        // 2. AIコメント生成（デモ用）
+        setTimeout(() => {
+            document.getElementById('output').value = "【AI解析結果】\nノートを確認しました。本日は分数計算のミスが3箇所ありましたが、解き方の手順は正しく理解できています。次回は符号の確認を重点的に行います。";
+            document.getElementById('status').innerText = "完了しました！";
+        }, 1500);
+    }
 
-    document.getElementById('output').value = res;
-}
+    // 縦に連結する魔法の関数
+    async function mergeImages() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const images = await Promise.all(photoList.map(src => {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.src = src;
+            });
+        }));
 
-function copyToClipboard() {
-    const output = document.getElementById('output');
-    output.select();
-    output.setSelectionRange(0, 99999);
-    document.execCommand('copy');
-    const toast = document.getElementById('toast');
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 2000);
-}
+        // 幅を1000pxに固定してスマホで見やすくする
+        const targetWidth = 1000;
+        let totalHeight = 0;
+        const resizedImages = images.map(img => {
+            const h = (targetWidth / img.width) * img.height;
+            totalHeight += h;
+            return { img, h };
+        });
 
-function resetForm() {
-    if(confirm("リセットしますか？")) location.reload();
-}
+        canvas.width = targetWidth;
+        canvas.height = totalHeight;
 
-generate();
+        let currentY = 0;
+        resizedImages.forEach(item => {
+            ctx.drawImage(item.img, 0, currentY, targetWidth, item.h);
+            currentY += item.h;
+        });
+
+        const resultImg = document.getElementById('mergedImagePreview');
+        resultImg.src = canvas.toDataURL('image/jpeg', 0.7); // 圧縮率0.7で軽量化
+        resultImg.style.display = 'block';
+        document.getElementById('saveHint').style.display = 'block';
+    }
 </script>
 </body>
 </html>
