@@ -31,7 +31,7 @@
         .btn-generate { background: var(--success); color: white; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
         .result-header { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         .btn-copy { background: var(--copy); color: white; border: none; border-radius: 4px; padding: 8px 15px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
-        textarea { width: 100%; height: 220px; margin-top: 5px; border: 2px solid #ddd; border-radius: 8px; padding: 12px; box-sizing: border-box; font-size: 0.95rem; line-height: 1.6; color: #333; }
+        textarea { width: 100%; height: 240px; margin-top: 5px; border: 2px solid #ddd; border-radius: 8px; padding: 12px; box-sizing: border-box; font-size: 0.95rem; line-height: 1.6; color: #333; }
         #mergedImagePreview { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: none; margin-top: 10px; }
         .img-guide { font-size: 0.75rem; color: var(--save); margin-top: 5px; display: none; text-align: center; font-weight: bold; }
         #loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 10px; font-size: 0.9rem; }
@@ -46,7 +46,7 @@
     <div id="settings" style="display:none;">
         <span class="label">🔑 APIキー設定</span>
         <input type="password" id="apiKeyInput" class="key-input" placeholder="AIza...を貼り付け">
-        <button class="btn-main" style="background:#6c757d; color:white; padding:8px; margin-top:10px; font-size:0.8rem;" onclick="saveKey()">キーを保存</button>
+        <button class="btn-main" style="background:#6c757d; color:white; padding:8px; margin-top:10px; font-size:0.8rem;" onclick="saveKey()">保存</button>
     </div>
 
     <span class="label">教科選択</span>
@@ -61,21 +61,21 @@
     <div id="evaluationContainer"></div>
 
     <div class="photo-area">
-        <button class="btn-main btn-camera" onclick="document.getElementById('cameraInput').click()">📷 ノートを撮影・選択 (3枚まで)</button>
+        <button class="btn-main btn-camera" onclick="document.getElementById('cameraInput').click()">📷 ノートを撮影 (3枚まで)</button>
         <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this.files)">
         <div class="preview-grid" id="previewGrid"></div>
     </div>
 
-    <div id="loading">✨ 文章を最後まで丁寧に作成中です...</div>
+    <div id="loading">🚀 解析中... (画像を軽量化して送信しています)</div>
     
     <div class="result-header">
         <span class="label" style="margin:0;">作成された報告文</span>
         <button class="btn-copy" id="copyBtn" onclick="copyText()">文章をコピー</button>
     </div>
-    <textarea id="output" placeholder="こちらに報告文が生成されます"></textarea>
+    <textarea id="output" placeholder="AIがノートを分析して報告文を作成します"></textarea>
     
     <span class="label">連結済み画像</span>
-    <p class="img-guide" id="imgGuide">↓ 画像を長押し or タップで保存</p>
+    <p class="img-guide" id="imgGuide">↓ 画像を長押しで保存</p>
     <img id="mergedImagePreview">
 </div>
 
@@ -84,7 +84,7 @@
 </div>
 
 <script>
-    let photoList = [];
+    let photoList = []; // オリジナルデータ
     let selectedSubject = '英語';
     let currentEvals = {};
     const subjectConfig = {
@@ -176,6 +176,28 @@
     }
     function removePhoto(index) { photoList.splice(index, 1); renderPreviews(); }
 
+    // --- 画像をリサイズする便利関数 (AI送信時の軽量化用) ---
+    async function resizeImage(dataUrl, maxWidth = 1600) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth) {
+                    height = (maxWidth / width) * height;
+                    width = maxWidth;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            img.src = dataUrl;
+        });
+    }
+
     async function runAI() {
         const apiKey = localStorage.getItem('GEMINI_API_KEY');
         if (!apiKey) { alert("APIキーを設定してください"); return; }
@@ -184,54 +206,56 @@
         const loading = document.getElementById('loading');
         const output = document.getElementById('output');
         loading.style.display = 'block';
-        output.value = "ノートをじっくり分析して、300文字程度の報告文を「完結」まで作成しています...";
+        output.value = "分析中...";
 
         try {
+            // 1. 画像の連結プレビュー作成
             await mergeImages();
             document.getElementById('imgGuide').style.display = 'block';
 
+            // 2. AI送信用の画像を軽量化 (ここでフリーズを防ぐ)
+            output.value = "画像を軽量化して送信準備中...";
+            const optimizedImages = await Promise.all(
+                photoList.slice(0, 3).map(src => resizeImage(src, 1200)) // 1200pxあれば十分読める
+            );
+
             let evalSummary = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
             
-            // 完結させるためのプロンプト強化版
-            const prompt = `あなたは非常に信頼されている個別指導塾の講師です。
-以下の情報を元に、保護者が安心し、状況がはっきりと伝わる授業報告書を作成してください。
+            const prompt = `あなたは非常に丁寧な塾講師です。
+以下の情報を元に、250文字〜300文字程度の保護者向け授業報告書を作成してください。
 
-【情報】
+【状況】
 ・教科: ${selectedSubject}
 ・評価: ${evalSummary}
 
-【ルール】
-1. 文字数は「250文字〜300文字」を目安にしてください。
-2. 挨拶（お世話になっております等）は不要です。
-3. 添付されたノート画像を分析し、「この一問を自力で解ききった」「文字が丁寧に書けている」「計算式を省かずに書いた」など、ノートから見える具体的な「変化や努力」を必ず1つ以上含めてください。
-4. 口調は温かい敬体（です・ます）で。
-5. **最重要：文章を途中で終わらせず、必ず結びの言葉まで含めて「。（句点）」で完結させてください。**`;
+【指示】
+1. 挨拶は不要、いきなり本文から書いてください。
+2. 添付されたノート画像を分析し、「この問題の解き方が良い」「見直しがしっかりできている」「文字が非常に丁寧」など、具体的な褒めポイントを必ず1点以上含めてください。
+3. 温かく誠実な口調（です・ます）で。
+4. 文章を途中で絶対に切らず、必ず「。 」で終わる結びの言葉まで完結させてください。`;
 
-            const imageParts = photoList.slice(0, 3).map(dataUrl => ({
+            const imageParts = optimizedImages.map(dataUrl => ({
                 inlineData: { data: dataUrl.split(',')[1], mimeType: "image/jpeg" }
             }));
 
+            // モデル名はスクショに従い gemini-3-flash-preview
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     contents: [{ parts: [{ text: prompt }, ...imageParts] }],
-                    generationConfig: { 
-                        temperature: 0.7, // 少し値を下げて安定性を向上
-                        maxOutputTokens: 1200 // トークンに十分な余裕を持たせる
-                    } 
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 1000 } 
                 })
             });
 
             const data = await response.json();
             if (data.candidates && data.candidates[0].content.parts[0].text) {
-                // 生成された文章をそのまま表示
                 output.value = data.candidates[0].content.parts[0].text.trim();
             } else {
-                output.value = "生成に失敗しました。キーの有効期限や設定を確認してください。";
+                throw new Error("AIからの応答が空でした。");
             }
         } catch (e) { 
-            output.value = "エラー: " + e.message; 
+            output.value = "エラーが発生しました。通信環境の良い場所で再度お試しください。\n原因: " + e.message; 
         } finally { 
             loading.style.display = 'none'; 
         }
