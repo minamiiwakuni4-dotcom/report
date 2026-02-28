@@ -2,50 +2,223 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>授業報告サポート</title>
     <style>
-        :root { --primary: #4a90e2; --success: #2ecc71; --bg: #f4f7f9; --copy: #6c757d; --save: #e67e22; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 140px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { font-size: 1rem; text-align: center; color: #333; margin-top: 0; }
-        .label { font-weight: bold; font-size: 0.85rem; color: #555; margin: 15px 0 8px; display: block; }
+        /* iPad/iPhoneの標準スタイルをリセットし、確実に色を出す設定 */
+        :root {
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --bg: #f4f7f9;
+            --copy: #6c757d;
+            --save: #e67e22;
+        }
 
-        #settings { background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba; text-align: center; }
-        .key-input { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; }
-        
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-        .choice-btn { flex: 1; min-width: 75px; padding: 10px 5px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
-        .choice-btn.active { border-color: var(--primary); background: #eef6ff; color: var(--primary); }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        .eval-row { margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
-        .eval-label { font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block; }
-        .eval-btn { flex: 1; padding: 8px 0; border: 1px solid #ccc; font-size: 0.75rem; }
-        .eval-good.active { background: #2ecc71; color: white; border: none; }
-        .eval-normal.active { background: #f1c40f; color: white; border: none; }
-        .eval-effort.active { background: #e74c3c; color: white; border: none; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px 15px;
+            padding-bottom: 140px; /* 下部ボタン用の余白 */
+            color: #333;
+        }
 
-        .photo-area { background: #fff; border: 2px dashed var(--primary); border-radius: 10px; padding: 15px; text-align: center; margin: 15px 0; }
-        .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-        .preview-item { position: relative; aspect-ratio: 3/4; background: #ddd; border-radius: 4px; overflow: hidden; }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h1 { font-size: 1.2rem; text-align: center; margin: 0 0 20px; color: #2d3748; }
+
+        /* 設定エリア */
+        #settings {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeeba;
+            text-align: center;
+        }
+
+        .key-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px; /* iOSでズームされないためのサイズ */
+            margin-bottom: 10px;
+        }
+
+        .label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #4a5568;
+            margin: 15px 0 8px;
+            display: block;
+        }
+
+        /* ボタンのデザイン（iPad対応版） */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 5px;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            color: #4a5568;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            /* iOS特有のデザインを無効化 */
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .choice-btn.active {
+            background-color: #ebf4ff;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* 評価ボタン（良い・普通・要注意） */
+        .eval-row {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .eval-btn {
+            background-color: #ffffff;
+            -webkit-appearance: none;
+        }
+
+        .eval-good.active { background-color: var(--success) !important; color: white !important; border-color: var(--success); }
+        .eval-normal.active { background-color: #f1c40f !important; color: white !important; border-color: #f1c40f; }
+        .eval-effort.active { background-color: #e74c3c !important; color: white !important; border-color: #e74c3c; }
+
+        /* カメラ・写真エリア */
+        .photo-area {
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background: #f8fbff;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            aspect-ratio: 3/4;
+            background: #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
         .preview-item img { width: 100%; height: 100%; object-fit: cover; }
-        .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; }
 
-        .btn-main { border: none; border-radius: 8px; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; }
-        .btn-camera { background: var(--primary); color: white; }
-        .btn-generate { background: var(--success); color: white; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
+        .del-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+        }
 
-        .result-header { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-        .header-buttons { display: flex; gap: 5px; }
-        .btn-copy { background: var(--copy); color: white; border: none; border-radius: 4px; padding: 5px 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
-        .btn-save { background: var(--save); color: white; border: none; border-radius: 4px; padding: 5px 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: none; }
-        
-        textarea { width: 100%; height: 200px; margin-top: 5px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; box-sizing: border-box; font-size: 0.95rem; line-height: 1.6; }
-        
-        #mergedImagePreview { width: 100%; max-width: 300px; margin: 15px auto; border-radius: 8px; border: 1px solid #ddd; display: none; }
-        
-        #loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 10px; }
-        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; gap: 10px; box-sizing: border-box; z-index: 100; }
+        /* 生成ボタン */
+        .btn-main {
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            -webkit-appearance: none;
+        }
+
+        .btn-camera { background-color: var(--primary); color: white; }
+        .btn-generate { 
+            background-color: var(--success); 
+            color: white; 
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+        }
+
+        /* 結果表示 */
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .header-buttons { display: flex; gap: 8px; }
+
+        .btn-copy { background-color: var(--copy); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; -webkit-appearance: none; }
+        .btn-save { background-color: var(--save); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; display: none; -webkit-appearance: none; }
+
+        textarea {
+            width: 100%;
+            height: 220px;
+            margin-top: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1rem;
+            line-height: 1.6;
+            -webkit-appearance: none;
+        }
+
+        #mergedImagePreview {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            display: none;
+            margin-top: 15px;
+        }
+
+        #loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 15px; }
+
+        /* 固定フッター */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 20px;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -54,9 +227,9 @@
     <h1>授業報告サポート</h1>
 
     <div id="settings">
-        <span class="label">🔑 初期設定：APIキーを入力</span>
-        <input type="password" id="apiKeyInput" class="key-input" placeholder="QRを読み取るか、AIza...を貼り付け">
-        <button class="btn-main" style="background:#6c757d; color:white; padding:8px; margin-top:10px; font-size:0.8rem;" onclick="saveKey()">キーをこの端末に保存</button>
+        <span class="label">🔑 APIキー</span>
+        <input type="password" id="apiKeyInput" class="key-input" placeholder="AIza...">
+        <button class="btn-main" style="background:#6c757d; color:white; padding:10px; font-size:0.9rem;" onclick="saveKey()">保存する</button>
     </div>
 
     <span class="label">教科選択</span>
@@ -76,23 +249,23 @@
         <div class="preview-grid" id="previewGrid"></div>
     </div>
 
-    <div id="loading">🚀 じっくり分析・作成中...</div>
+    <div id="loading">🚀 報告文を作成中...</div>
     
     <div class="result-header">
-        <span class="label" style="margin:0;">作成された報告文</span>
+        <span class="label" style="margin:0;">報告文</span>
         <div class="header-buttons">
-            <button class="btn-save" id="saveBtn" onclick="saveMergedImage()">画像を保存</button>
-            <button class="btn-copy" id="copyBtn" onclick="copyText()">文章をコピー</button>
+            <button class="btn-save" id="saveBtn" onclick="saveMergedImage()">保存</button>
+            <button class="btn-copy" id="copyBtn" onclick="copyText()">コピー</button>
         </div>
     </div>
     <textarea id="output" placeholder="AI作成のコメントがここに表示されます"></textarea>
     
-    <span class="label">連結済み画像（長押し保存可）</span>
+    <span class="label">連結画像 (長押し保存可)</span>
     <img id="mergedImagePreview">
 </div>
 
 <div class="footer">
-    <button class="btn-main btn-generate" onclick="runAI()">報告作成 ＆ 画像連結</button>
+    <button class="btn-main btn-generate" onclick="runAI()">報告を作成する</button>
 </div>
 
 <script>
@@ -109,13 +282,13 @@
 
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
-        const keyFromUrl = urlParams.get('key');
-        if (keyFromUrl && keyFromUrl.startsWith('AIza')) {
-            localStorage.setItem('GEMINI_API_KEY', keyFromUrl);
+        const urlKey = urlParams.get('key');
+        if (urlKey && urlKey.startsWith('AIza')) {
+            localStorage.setItem('GEMINI_API_KEY', urlKey);
             window.history.replaceState({}, document.title, window.location.pathname);
         }
         const savedKey = localStorage.getItem('GEMINI_API_KEY');
-        if (savedKey) { document.getElementById('settings').style.display = 'none'; }
+        if (savedKey) document.getElementById('settings').style.display = 'none';
         renderEvaluationRows('英語');
     };
 
@@ -124,26 +297,24 @@
         if (key.startsWith('AIza')) {
             localStorage.setItem('GEMINI_API_KEY', key);
             document.getElementById('settings').style.display = 'none';
-            alert('保存完了！');
+            alert('保存しました');
         }
     }
 
     function copyText() {
         const textarea = document.getElementById('output');
         textarea.select();
-        navigator.clipboard.writeText(textarea.value).then(() => {
-            const btn = document.getElementById('copyBtn');
-            btn.innerText = 'コピー済';
-            setTimeout(() => btn.innerText = '文章をコピー', 2000);
-        });
+        document.execCommand('copy');
+        const btn = document.getElementById('copyBtn');
+        btn.innerText = '完了';
+        setTimeout(() => btn.innerText = 'コピー', 2000);
     }
 
     function saveMergedImage() {
         const img = document.getElementById('mergedImagePreview');
-        if (!img.src) return;
         const link = document.createElement('a');
         link.href = img.src;
-        link.download = `Report_${selectedSubject}_${new Date().getTime()}.jpg`;
+        link.download = `Report_${selectedSubject}.jpg`;
         link.click();
     }
 
@@ -165,7 +336,7 @@
                 <div class="btn-group">
                     <button class="choice-btn eval-btn eval-good active" onclick="setEval('${item}', '良い', this)">良い</button>
                     <button class="choice-btn eval-btn eval-normal" onclick="setEval('${item}', '普通', this)">普通</button>
-                    <button class="choice-btn eval-btn eval-effort" onclick="setEval('${item}', '要努力', this)">要努力</button>
+                    <button class="choice-btn eval-btn eval-effort" onclick="setEval('${item}', '要注意', this)">要注意</button>
                 </div>`;
             container.appendChild(row);
         });
@@ -198,29 +369,25 @@
 
     async function runAI() {
         const apiKey = localStorage.getItem('GEMINI_API_KEY');
-        if (!apiKey) { alert("APIキーが設定されていません。"); return; }
-        if (photoList.length === 0) { alert("ノートを撮影してください"); return; }
+        if (!apiKey) { alert("APIキーがありません"); return; }
+        if (photoList.length === 0) { alert("写真を撮ってください"); return; }
         
-        const loading = document.getElementById('loading');
+        document.getElementById('loading').style.display = 'block';
         const output = document.getElementById('output');
-        loading.style.display = 'block';
-        output.value = "AIがノートを分析し、最後まで書ききっています...";
+        output.value = "分析中...";
 
         try {
             await mergeImages();
             document.getElementById('saveBtn').style.display = 'block';
 
             let evalText = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
-            const prompt = `あなたはプロの塾講師です。
-以下の情報を元に、保護者が安心する授業報告書を作成してください。
-
+            const prompt = `あなたは丁寧な塾講師です。以下の情報を元に、保護者への授業報告書を作成してください。
 教科: ${selectedSubject}, 評価: ${evalText}
-
 【ルール】
-1. 挨拶（お世話になっております等）は不要です。
-2. 文字数は「250〜300文字」程度で、詳しく作成してください。
-3. 添付されたノート画像を分析し、具体的でポジティブな気づきを必ず1つ以上含めてください。
-4. **最重要：途中で切らさず、必ず結びの言葉まで書いて「。」で終わらせてください。**`;
+1. 挨拶は不要、本文から開始。
+2. 250〜300文字程度で詳しく作成。
+3. ノート画像を分析し、具体的な褒めポイントを必ず1つ以上含む。
+4. 必ず「。」で終わる結びの言葉まで完結させること。`;
 
             const imageParts = photoList.slice(0, 3).map(dataUrl => ({
                 inlineData: { data: dataUrl.split(',')[1], mimeType: "image/jpeg" }
@@ -236,12 +403,8 @@
             });
 
             const data = await response.json();
-            if (data.candidates) {
-                output.value = data.candidates[0].content.parts[0].text.trim();
-            } else {
-                output.value = "エラーが発生しました。キーを確認してください。";
-            }
-        } catch (e) { output.value = "エラー: " + e.message; } finally { loading.style.display = 'none'; }
+            output.value = data.candidates[0].content.parts[0].text.trim();
+        } catch (e) { output.value = "エラーが発生しました"; } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
     async function mergeImages() {
