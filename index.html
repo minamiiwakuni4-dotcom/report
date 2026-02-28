@@ -1,264 +1,274 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>授業報告サポート</title>
-    <style>
-        :root { --primary: #4a90e2; --success: #2ecc71; --bg: #f4f7f9; --copy: #6c757d; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 140px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { font-size: 1rem; text-align: center; color: #333; margin-top: 0; }
-        .label { font-weight: bold; font-size: 0.85rem; color: #555; margin: 15px 0 8px; display: block; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>授業報告サポート</title>
+    <style>
+        :root { --primary: #4a90e2; --success: #2ecc71; --bg: #f4f7f9; --copy: #6c757d; --save: #e67e22; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 140px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 1rem; text-align: center; color: #333; margin-top: 0; }
+        .label { font-weight: bold; font-size: 0.85rem; color: #555; margin: 15px 0 8px; display: block; }
 
-        #settings { background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba; text-align: center; }
-        .key-input { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; }
-        
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-        .choice-btn { flex: 1; min-width: 75px; padding: 10px 5px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
-        .choice-btn.active { border-color: var(--primary); background: #eef6ff; color: var(--primary); }
+        #settings { background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba; text-align: center; }
+        .key-input { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; }
+        
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .choice-btn { flex: 1; min-width: 75px; padding: 10px 5px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .choice-btn.active { border-color: var(--primary); background: #eef6ff; color: var(--primary); }
 
-        .eval-row { margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
-        .eval-label { font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block; }
-        .eval-btn { flex: 1; padding: 8px 0; border: 1px solid #ccc; font-size: 0.75rem; }
-        .eval-good.active { background: #2ecc71; color: white; border: none; }
-        .eval-normal.active { background: #f1c40f; color: white; border: none; }
-        .eval-effort.active { background: #e74c3c; color: white; border: none; }
+        .eval-row { margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+        .eval-label { font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block; }
+        .eval-btn { flex: 1; padding: 8px 0; border: 1px solid #ccc; font-size: 0.75rem; }
+        .eval-good.active { background: #2ecc71; color: white; border: none; }
+        .eval-normal.active { background: #f1c40f; color: white; border: none; }
+        .eval-effort.active { background: #e74c3c; color: white; border: none; }
 
-        .photo-area { background: #fff; border: 2px dashed var(--primary); border-radius: 10px; padding: 15px; text-align: center; margin: 15px 0; }
-        .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-        .preview-item { position: relative; aspect-ratio: 3/4; background: #ddd; border-radius: 4px; overflow: hidden; }
-        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
-        .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; }
+        .photo-area { background: #fff; border: 2px dashed var(--primary); border-radius: 10px; padding: 15px; text-align: center; margin: 15px 0; }
+        .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+        .preview-item { position: relative; aspect-ratio: 3/4; background: #ddd; border-radius: 4px; overflow: hidden; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; }
 
-        .btn-main { border: none; border-radius: 8px; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; }
-        .btn-camera { background: var(--primary); color: white; }
-        .btn-generate { background: var(--success); color: white; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
+        .btn-main { border: none; border-radius: 8px; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-camera { background: var(--primary); color: white; }
+        .btn-generate { background: var(--success); color: white; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
 
-        /* 結果エリアの調整 */
-        .result-header { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-        .btn-copy { background: var(--copy); color: white; border: none; border-radius: 4px; padding: 5px 12px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
-        textarea { width: 100%; height: 160px; margin-top: 5px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; box-sizing: border-box; font-size: 0.9rem; }
-        
-        /* 連結画像プレビューを小さく設定 */
-        #mergedImagePreview { width: 100%; max-width: 300px; max-height: 200px; object-fit: contain; margin: 15px auto; border-radius: 8px; border: 1px solid #ddd; display: none; }
-        
-        #loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 10px; }
-        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; gap: 10px; box-sizing: border-box; z-index: 100; }
-    </style>
+        .result-header { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .header-buttons { display: flex; gap: 5px; }
+        .btn-copy { background: var(--copy); color: white; border: none; border-radius: 4px; padding: 5px 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
+        .btn-save { background: var(--save); color: white; border: none; border-radius: 4px; padding: 5px 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: none; }
+        
+        textarea { width: 100%; height: 200px; margin-top: 5px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; box-sizing: border-box; font-size: 0.95rem; line-height: 1.6; }
+        
+        #mergedImagePreview { width: 100%; max-width: 300px; margin: 15px auto; border-radius: 8px; border: 1px solid #ddd; display: none; }
+        
+        #loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 10px; }
+        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; gap: 10px; box-sizing: border-box; z-index: 100; }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>授業報告サポート</h1>
+    <h1>授業報告サポート</h1>
 
-    <div id="settings">
-        <span class="label">🔑 初期設定：APIキーを入力</span>
-        <input type="password" id="apiKeyInput" class="key-input" placeholder="QRを読み取るか、AIza...を貼り付け">
-        <button class="btn-main" style="background:#6c757d; color:white; padding:8px; margin-top:10px; font-size:0.8rem;" onclick="saveKey()">キーをこの端末に保存</button>
-    </div>
+    <div id="settings">
+        <span class="label">🔑 初期設定：APIキーを入力</span>
+        <input type="password" id="apiKeyInput" class="key-input" placeholder="QRを読み取るか、AIza...を貼り付け">
+        <button class="btn-main" style="background:#6c757d; color:white; padding:8px; margin-top:10px; font-size:0.8rem;" onclick="saveKey()">キーをこの端末に保存</button>
+    </div>
 
-    <span class="label">教科選択</span>
-    <div class="btn-group" id="subjectGroup">
-        <button class="choice-btn active" onclick="changeSubject('英語', this)">英語</button>
-        <button class="choice-btn" onclick="changeSubject('数学', this)">数学</button>
-        <button class="choice-btn" onclick="changeSubject('国語', this)">国語</button>
-        <button class="choice-btn" onclick="changeSubject('理科', this)">理科</button>
-        <button class="choice-btn" onclick="changeSubject('社会', this)">社会</button>
-    </div>
+    <span class="label">教科選択</span>
+    <div class="btn-group" id="subjectGroup">
+        <button class="choice-btn active" onclick="changeSubject('英語', this)">英語</button>
+        <button class="choice-btn" onclick="changeSubject('数学', this)">数学</button>
+        <button class="choice-btn" onclick="changeSubject('国語', this)">国語</button>
+        <button class="choice-btn" onclick="changeSubject('理科', this)">理科</button>
+        <button class="choice-btn" onclick="changeSubject('社会', this)">社会</button>
+    </div>
 
-    <div id="evaluationContainer"></div>
+    <div id="evaluationContainer"></div>
 
-    <div class="photo-area">
-        <button class="btn-main btn-camera" onclick="document.getElementById('cameraInput').click()">📷 ノートを撮影 (連写可)</button>
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this.files)">
-        <div class="preview-grid" id="previewGrid"></div>
-    </div>
+    <div class="photo-area">
+        <button class="btn-main btn-camera" onclick="document.getElementById('cameraInput').click()">📷 ノートを撮影 (3枚まで)</button>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this.files)">
+        <div class="preview-grid" id="previewGrid"></div>
+    </div>
 
-    <div id="loading">🚀 分析中...</div>
-    
-    <div class="result-header">
-        <span class="label" style="margin:0;">作成された報告文</span>
-        <button class="btn-copy" onclick="copyText()">文章をコピー</button>
-    </div>
-    <textarea id="output" placeholder="AI作成のコメントがここに表示されます"></textarea>
-    
-    <span class="label">連結済み画像（長押しで保存）</span>
-    <img id="mergedImagePreview">
+    <div id="loading">🚀 じっくり分析・作成中...</div>
+    
+    <div class="result-header">
+        <span class="label" style="margin:0;">作成された報告文</span>
+        <div class="header-buttons">
+            <button class="btn-save" id="saveBtn" onclick="saveMergedImage()">画像を保存</button>
+            <button class="btn-copy" id="copyBtn" onclick="copyText()">文章をコピー</button>
+        </div>
+    </div>
+    <textarea id="output" placeholder="AI作成のコメントがここに表示されます"></textarea>
+    
+    <span class="label">連結済み画像（長押し保存可）</span>
+    <img id="mergedImagePreview">
 </div>
 
 <div class="footer">
-    <button class="btn-main btn-generate" onclick="runAI()">報告作成 ＆ 画像連結</button>
+    <button class="btn-main btn-generate" onclick="runAI()">報告作成 ＆ 画像連結</button>
 </div>
 
 <script>
-    let photoList = [];
-    let selectedSubject = '英語';
-    let currentEvals = {};
-    const subjectConfig = {
-        '英語': ['集中度', '理解度', '文法理解', '語彙力'],
-        '数学': ['集中度', '理解度', '計算力', '記述力'],
-        '理科': ['集中度', '理解度', '用語公式暗記', '記述力'],
-        '社会': ['集中度', '理解度', '用語暗記', '記述力'],
-        '国語': ['集中度', '理解度', '内容把握', '記述力']
-    };
+    let photoList = [];
+    let selectedSubject = '英語';
+    let currentEvals = {};
+    const subjectConfig = {
+        '英語': ['集中度', '理解度', '文法理解', '語彙力'],
+        '数学': ['集中度', '理解度', '計算力', '記述力'],
+        '理科': ['集中度', '理解度', '用語公式暗記', '記述力'],
+        '社会': ['集中度', '理解度', '用語暗記', '記述力'],
+        '国語': ['集中度', '理解度', '内容把握', '記述力']
+    };
 
-    window.onload = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const keyFromUrl = urlParams.get('key');
-        if (keyFromUrl && keyFromUrl.startsWith('AIza')) {
-            localStorage.setItem('GEMINI_API_KEY', keyFromUrl);
-            window.history.replaceState({}, document.title, window.location.pathname);
-            alert('APIキーを自動設定しました！');
-        }
-        const savedKey = localStorage.getItem('GEMINI_API_KEY');
-        if (savedKey) { document.getElementById('settings').style.display = 'none'; }
-        renderEvaluationRows('英語');
-    };
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const keyFromUrl = urlParams.get('key');
+        if (keyFromUrl && keyFromUrl.startsWith('AIza')) {
+            localStorage.setItem('GEMINI_API_KEY', keyFromUrl);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        const savedKey = localStorage.getItem('GEMINI_API_KEY');
+        if (savedKey) { document.getElementById('settings').style.display = 'none'; }
+        renderEvaluationRows('英語');
+    };
 
-    function saveKey() {
-        const key = document.getElementById('apiKeyInput').value;
-        if (key.startsWith('AIza')) {
-            localStorage.setItem('GEMINI_API_KEY', key);
-            document.getElementById('settings').style.display = 'none';
-            alert('保存完了！');
-        } else { alert('正しいキーを入力してください。'); }
-    }
+    function saveKey() {
+        const key = document.getElementById('apiKeyInput').value;
+        if (key.startsWith('AIza')) {
+            localStorage.setItem('GEMINI_API_KEY', key);
+            document.getElementById('settings').style.display = 'none';
+            alert('保存完了！');
+        }
+    }
 
-    // コピー機能
-    function copyText() {
-        const textarea = document.getElementById('output');
-        textarea.select();
-        textarea.setSelectionRange(0, 99999); // スマホ対応
-        navigator.clipboard.writeText(textarea.value).then(() => {
-            const btn = document.querySelector('.btn-copy');
-            const originalText = btn.innerText;
-            btn.innerText = 'コピーしました！';
-            btn.style.background = '#2ecc71';
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = '#6c757d';
-            }, 2000);
-        });
-    }
+    function copyText() {
+        const textarea = document.getElementById('output');
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.innerText = 'コピー済';
+            setTimeout(() => btn.innerText = '文章をコピー', 2000);
+        });
+    }
 
-    function changeSubject(subject, btn) {
-        selectedSubject = subject;
-        document.querySelectorAll('#subjectGroup .choice-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderEvaluationRows(subject);
-    }
+    function saveMergedImage() {
+        const img = document.getElementById('mergedImagePreview');
+        if (!img.src) return;
+        const link = document.createElement('a');
+        link.href = img.src;
+        link.download = `Report_${selectedSubject}_${new Date().getTime()}.jpg`;
+        link.click();
+    }
 
-    function renderEvaluationRows(subject) {
-        const container = document.getElementById('evaluationContainer');
-        container.innerHTML = '';
-        currentEvals = {};
-        subjectConfig[subject].forEach(item => {
-            currentEvals[item] = '良い';
-            const row = document.createElement('div');
-            row.className = 'eval-row';
-            row.innerHTML = `<span class="eval-label">${item}</span>
-                <div class="btn-group">
-                    <button class="choice-btn eval-btn eval-good active" onclick="setEval('${item}', '良い', this)">良い</button>
-                    <button class="choice-btn eval-btn eval-normal" onclick="setEval('${item}', '普通', this)">普通</button>
-                    <button class="choice-btn eval-btn eval-effort" onclick="setEval('${item}', '要努力', this)">要努力</button>
-                </div>`;
-            container.appendChild(row);
-        });
-    }
+    function changeSubject(subject, btn) {
+        selectedSubject = subject;
+        document.querySelectorAll('#subjectGroup .choice-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderEvaluationRows(subject);
+    }
 
-    function setEval(item, value, btn) {
-        currentEvals[item] = value;
-        btn.parentElement.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
+    function renderEvaluationRows(subject) {
+        const container = document.getElementById('evaluationContainer');
+        container.innerHTML = '';
+        subjectConfig[subject].forEach(item => {
+            currentEvals[item] = '良い';
+            const row = document.createElement('div');
+            row.className = 'eval-row';
+            row.innerHTML = `<span class="eval-label">${item}</span>
+                <div class="btn-group">
+                    <button class="choice-btn eval-btn eval-good active" onclick="setEval('${item}', '良い', this)">良い</button>
+                    <button class="choice-btn eval-btn eval-normal" onclick="setEval('${item}', '普通', this)">普通</button>
+                    <button class="choice-btn eval-btn eval-effort" onclick="setEval('${item}', '要努力', this)">要努力</button>
+                </div>`;
+            container.appendChild(row);
+        });
+    }
 
-    function handleFiles(files) {
-        for (let file of files) {
-            const reader = new FileReader();
-            reader.onload = (e) => { photoList.push(e.target.result); renderPreviews(); };
-            reader.readAsDataURL(file);
-        }
-    }
+    function setEval(item, value, btn) {
+        currentEvals[item] = value;
+        btn.parentElement.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
 
-    function renderPreviews() {
-        const grid = document.getElementById('previewGrid'); grid.innerHTML = '';
-        photoList.forEach((src, index) => {
-            const div = document.createElement('div');
-            div.className = 'preview-item';
-            div.innerHTML = `<img src="${src}"><button class="del-btn" onclick="removePhoto(${index})">✕</button>`;
-            grid.appendChild(div);
-        });
-    }
-    function removePhoto(index) { photoList.splice(index, 1); renderPreviews(); }
+    function handleFiles(files) {
+        for (let file of files) {
+            const reader = new FileReader();
+            reader.onload = (e) => { photoList.push(e.target.result); renderPreviews(); };
+            reader.readAsDataURL(file);
+        }
+    }
 
-    async function runAI() {
-        const apiKey = localStorage.getItem('GEMINI_API_KEY');
-        if (!apiKey) { alert("APIキーが設定されていません。"); return; }
-        if (photoList.length === 0) { alert("ノートを撮影してください"); return; }
-        
-        const loading = document.getElementById('loading');
-        const output = document.getElementById('output');
-        loading.style.display = 'block';
-        output.value = "AIがノートを分析中...";
+    function renderPreviews() {
+        const grid = document.getElementById('previewGrid'); grid.innerHTML = '';
+        photoList.forEach((src, index) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `<img src="${src}"><button class="del-btn" onclick="removePhoto(${index})">✕</button>`;
+            grid.appendChild(div);
+        });
+    }
+    function removePhoto(index) { photoList.splice(index, 1); renderPreviews(); }
 
-        try {
-            await mergeImages();
-            let evalText = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
-            
-            // プロンプトを調整：挨拶を禁止し、本文のみを求める
-            const prompt = `あなたは塾講師です。以下の情報を元に、保護者への授業報告書を作成してください。
-            教科: ${selectedSubject}, 評価: ${evalText}。
-            【制約事項】
-            1. 文頭の「プロの講師として〜」「本日の授業報告を作成しました」といった定型文や挨拶は絶対に含めないでください。
-            2. 本文（全体評価、学習内容、分析、課題）のみを、150〜200字程度の温かい口調で作成してください。
-            3. ノートの写真を分析した具体的な気づきを必ず含めてください。`;
+    async function runAI() {
+        const apiKey = localStorage.getItem('GEMINI_API_KEY');
+        if (!apiKey) { alert("APIキーが設定されていません。"); return; }
+        if (photoList.length === 0) { alert("ノートを撮影してください"); return; }
+        
+        const loading = document.getElementById('loading');
+        const output = document.getElementById('output');
+        loading.style.display = 'block';
+        output.value = "AIがノートを分析し、最後まで書ききっています...";
 
-            const imageParts = photoList.map(dataUrl => ({
-                inlineData: { data: dataUrl.split(',')[1], mimeType: "image/jpeg" }
-            }));
+        try {
+            await mergeImages();
+            document.getElementById('saveBtn').style.display = 'block';
 
-            // 最新の Gemini 3 Flash Preview を使用
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...imageParts] }] })
-            });
+            let evalText = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
+            const prompt = `あなたはプロの塾講師です。
+以下の情報を元に、保護者が安心する授業報告書を作成してください。
 
-            const data = await response.json();
-            if (data.error) {
-                output.value = `エラー: ${data.error.message}`;
-            } else {
-                output.value = data.candidates[0].content.parts[0].text;
-            }
-        } catch (e) { output.value = "通信エラーが発生しました。"; } finally { loading.style.display = 'none'; }
-    }
+教科: ${selectedSubject}, 評価: ${evalText}
 
-    async function mergeImages() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const images = await Promise.all(photoList.map(src => {
-            return new Promise(resolve => {
-                const img = new Image();
-                img.onload = () => resolve(img);
-                img.src = src;
-            });
-        }));
-        const targetWidth = 1000;
-        let totalHeight = 0;
-        const resized = images.map(img => {
-            const h = (targetWidth / img.width) * img.height;
-            totalHeight += h;
-            return { img, h };
-        });
-        canvas.width = targetWidth;
-        canvas.height = totalHeight;
-        let currentY = 0;
-        resized.forEach(item => { ctx.drawImage(item.img, 0, currentY, targetWidth, item.h); currentY += item.h; });
-        const resultImg = document.getElementById('mergedImagePreview');
-        resultImg.src = canvas.toDataURL('image/jpeg', 0.8);
-        resultImg.style.display = 'block';
-    }
+【ルール】
+1. 挨拶（お世話になっております等）は不要です。
+2. 文字数は「250〜300文字」程度で、詳しく作成してください。
+3. 添付されたノート画像を分析し、具体的でポジティブな気づきを必ず1つ以上含めてください。
+4. **最重要：途中で切らさず、必ず結びの言葉まで書いて「。」で終わらせてください。**`;
+
+            const imageParts = photoList.slice(0, 3).map(dataUrl => ({
+                inlineData: { data: dataUrl.split(',')[1], mimeType: "image/jpeg" }
+            }));
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    contents: [{ parts: [{ text: prompt }, ...imageParts] }],
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
+                })
+            });
+
+            const data = await response.json();
+            if (data.candidates) {
+                output.value = data.candidates[0].content.parts[0].text.trim();
+            } else {
+                output.value = "エラーが発生しました。キーを確認してください。";
+            }
+        } catch (e) { output.value = "エラー: " + e.message; } finally { loading.style.display = 'none'; }
+    }
+
+    async function mergeImages() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const images = await Promise.all(photoList.slice(0, 3).map(src => {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.src = src;
+            });
+        }));
+        const targetWidth = 1000;
+        let totalHeight = 0;
+        const resized = images.map(img => {
+            const h = (targetWidth / img.width) * img.height;
+            totalHeight += h;
+            return { img, h };
+        });
+        canvas.width = targetWidth;
+        canvas.height = totalHeight;
+        let currentY = 0;
+        resized.forEach(item => { ctx.drawImage(item.img, 0, currentY, targetWidth, item.h); currentY += item.h; });
+        const resultImg = document.getElementById('mergedImagePreview');
+        resultImg.src = canvas.toDataURL('image/jpeg', 0.8);
+        resultImg.style.display = 'block';
+    }
 </script>
 </body>
 </html>
