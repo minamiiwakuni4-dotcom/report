@@ -10,41 +10,31 @@
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         h1 { font-size: 1rem; text-align: center; color: #333; margin-top: 0; }
         .label { font-weight: bold; font-size: 0.85rem; color: #555; margin: 15px 0 8px; display: block; }
-
         #settings { background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba; text-align: center; }
         .key-input { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; }
-        
         .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
         .choice-btn { flex: 1; min-width: 75px; padding: 10px 5px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
         .choice-btn.active { border-color: var(--primary); background: #eef6ff; color: var(--primary); }
-
         .eval-row { margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
         .eval-label { font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block; }
         .eval-btn { flex: 1; padding: 8px 0; border: 1px solid #ccc; font-size: 0.75rem; }
         .eval-good.active { background: #2ecc71; color: white; border: none; }
         .eval-normal.active { background: #f1c40f; color: white; border: none; }
         .eval-effort.active { background: #e74c3c; color: white; border: none; }
-
         .photo-area { background: #fff; border: 2px dashed var(--primary); border-radius: 10px; padding: 15px; text-align: center; margin: 15px 0; }
         .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
         .preview-item { position: relative; aspect-ratio: 3/4; background: #ddd; border-radius: 4px; overflow: hidden; }
         .preview-item img { width: 100%; height: 100%; object-fit: cover; }
         .del-btn { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; }
-
         .btn-main { border: none; border-radius: 8px; padding: 15px; font-weight: bold; cursor: pointer; width: 100%; }
         .btn-camera { background: var(--primary); color: white; }
         .btn-generate { background: var(--success); color: white; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
-
         .result-header { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-        .header-buttons { display: flex; gap: 5px; }
         .btn-copy { background: var(--copy); color: white; border: none; border-radius: 4px; padding: 8px 15px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
-        
-        textarea { width: 100%; height: 200px; margin-top: 5px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; box-sizing: border-box; font-size: 0.9rem; line-height: 1.5; }
-        
+        textarea { width: 100%; height: 220px; margin-top: 5px; border: 2px solid #ddd; border-radius: 8px; padding: 12px; box-sizing: border-box; font-size: 0.95rem; line-height: 1.6; color: #333; }
         #mergedImagePreview { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: none; margin-top: 10px; }
         .img-guide { font-size: 0.75rem; color: var(--save); margin-top: 5px; display: none; text-align: center; font-weight: bold; }
-        
-        #loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 10px; }
+        #loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 10px; font-size: 0.9rem; }
         .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; gap: 10px; box-sizing: border-box; z-index: 100; }
     </style>
 </head>
@@ -56,7 +46,7 @@
     <div id="settings" style="display:none;">
         <span class="label">🔑 APIキー設定</span>
         <input type="password" id="apiKeyInput" class="key-input" placeholder="AIza...を貼り付け">
-        <button class="btn-main" style="background:#6c757d; color:white; padding:8px; margin-top:10px; font-size:0.8rem;" onclick="saveKey()">保存</button>
+        <button class="btn-main" style="background:#6c757d; color:white; padding:8px; margin-top:10px; font-size:0.8rem;" onclick="saveKey()">キーを保存</button>
     </div>
 
     <span class="label">教科選択</span>
@@ -71,21 +61,21 @@
     <div id="evaluationContainer"></div>
 
     <div class="photo-area">
-        <button class="btn-main btn-camera" onclick="document.getElementById('cameraInput').click()">📷 ノートを撮影 (3枚)</button>
+        <button class="btn-main btn-camera" onclick="document.getElementById('cameraInput').click()">📷 ノートを撮影・選択 (3枚まで)</button>
         <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this.files)">
         <div class="preview-grid" id="previewGrid"></div>
     </div>
 
-    <div id="loading">🚀 思考中...(250〜300字で作成中)</div>
+    <div id="loading">✨ 文章を最後まで丁寧に作成中です...</div>
     
     <div class="result-header">
         <span class="label" style="margin:0;">作成された報告文</span>
         <button class="btn-copy" id="copyBtn" onclick="copyText()">文章をコピー</button>
     </div>
-    <textarea id="output" placeholder="AI作成のコメントがここに表示されます"></textarea>
+    <textarea id="output" placeholder="こちらに報告文が生成されます"></textarea>
     
     <span class="label">連結済み画像</span>
-    <p class="img-guide" id="imgGuide">↓ 画像を長押し or タップで保存・共有</p>
+    <p class="img-guide" id="imgGuide">↓ 画像を長押し or タップで保存</p>
     <img id="mergedImagePreview">
 </div>
 
@@ -100,9 +90,9 @@
     const subjectConfig = {
         '英語': ['集中度', '理解度', '文法理解', '語彙力'],
         '数学': ['集中度', '理解度', '計算力', '記述力'],
-        '理科': ['集中度', '理解度', '用語暗記', '実験・考察'],
-        '社会': ['集中度', '理解度', '用語暗記', '要点把握'],
-        '国語': ['集中度', '理解度', '内容把握', '記述力']
+        '理科': ['集中度', '理解度', '用語暗記', '思考プロセス'],
+        '社会': ['集中度', '理解度', '用語知識', '要点整理'],
+        '国語': ['集中度', '理解度', '読解表現', '記述力']
     };
 
     window.onload = () => {
@@ -194,31 +184,29 @@
         const loading = document.getElementById('loading');
         const output = document.getElementById('output');
         loading.style.display = 'block';
-        output.value = "画像を連結し、Gemini 3 Flash が詳細な報告文を作成しています...";
+        output.value = "ノートをじっくり分析して、300文字程度の報告文を「完結」まで作成しています...";
 
         try {
-            // 画像連結処理
             await mergeImages();
             document.getElementById('imgGuide').style.display = 'block';
 
             let evalSummary = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
             
-            // プロンプトの強化：文字数指定と具体性を向上
-            const prompt = `あなたは非常に丁寧で熱心な個別指導塾の講師です。
-以下の情報を元に、保護者が安心し、かつ状況が手に取るようにわかる「授業報告書」を作成してください。
+            // 完結させるためのプロンプト強化版
+            const prompt = `あなたは非常に信頼されている個別指導塾の講師です。
+以下の情報を元に、保護者が安心し、状況がはっきりと伝わる授業報告書を作成してください。
 
-【入力データ】
+【情報】
 ・教科: ${selectedSubject}
-・項目別評価: ${evalSummary}
+・評価: ${evalSummary}
 
-【作成指示】
-1. 文字数は「250文字〜300文字程度」で作成してください。※短すぎないよう注意。
-2. 冒頭の挨拶（お世話になっております等）は不要です。いきなり本文から始めてください。
-3. 添付された「ノートの画像」をじっくり分析し、そこから読み取れる「生徒の思考の跡」「ミスの修正過程」「文字の丁寧さ」などを、必ず具体的かつポジティブに1つ以上盛り込んでください。
-4. 今後の課題についても、温かく前向きな表現で添えてください。
-5. 親しみやすく、信頼感のある敬体（です・ます）で。`;
+【ルール】
+1. 文字数は「250文字〜300文字」を目安にしてください。
+2. 挨拶（お世話になっております等）は不要です。
+3. 添付されたノート画像を分析し、「この一問を自力で解ききった」「文字が丁寧に書けている」「計算式を省かずに書いた」など、ノートから見える具体的な「変化や努力」を必ず1つ以上含めてください。
+4. 口調は温かい敬体（です・ます）で。
+5. **最重要：文章を途中で終わらせず、必ず結びの言葉まで含めて「。（句点）」で完結させてください。**`;
 
-            // 分析用：オリジナル画質を使用
             const imageParts = photoList.slice(0, 3).map(dataUrl => ({
                 inlineData: { data: dataUrl.split(',')[1], mimeType: "image/jpeg" }
             }));
@@ -228,18 +216,22 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     contents: [{ parts: [{ text: prompt }, ...imageParts] }],
-                    generationConfig: { temperature: 0.8, maxOutputTokens: 1000 } 
+                    generationConfig: { 
+                        temperature: 0.7, // 少し値を下げて安定性を向上
+                        maxOutputTokens: 1200 // トークンに十分な余裕を持たせる
+                    } 
                 })
             });
 
             const data = await response.json();
             if (data.candidates && data.candidates[0].content.parts[0].text) {
-                output.value = data.candidates[0].content.parts[0].text;
+                // 生成された文章をそのまま表示
+                output.value = data.candidates[0].content.parts[0].text.trim();
             } else {
-                output.value = "生成に失敗しました。再度お試しください。";
+                output.value = "生成に失敗しました。キーの有効期限や設定を確認してください。";
             }
         } catch (e) { 
-            output.value = "通信エラーが発生しました: " + e.message; 
+            output.value = "エラー: " + e.message; 
         } finally { 
             loading.style.display = 'none'; 
         }
