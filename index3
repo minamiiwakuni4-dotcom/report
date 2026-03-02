@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>授業報告 V3 Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card-done { background-color: #f3f4f6; opacity: 0.6; border-left: 8px solid #10b981; }
+        .card-active { border-left: 8px solid #3b82f6; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen pb-20">
+
+    <div id="dashboardView">
+        <header class="bg-white shadow-sm p-4 sticky top-0 z-10">
+            <h1 class="text-xl font-bold text-center mb-3">授業報告システム V3</h1>
+            <div class="flex gap-2">
+                <input type="text" id="studentSearch" placeholder="生徒名で検索..." class="flex-1 border rounded-lg px-3 py-2 text-sm">
+                <button onclick="loadData()" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold">🔄 更新</button>
+                <button onclick="manualEntry()" class="bg-emerald-500 text-white px-3 py-2 rounded-lg text-sm font-bold">➕</button>
+            </div>
+        </header>
+
+        <main id="cardContainer" class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="text-center py-10 text-gray-500">データを読み込み中...</div>
+        </main>
+    </div>
+
+    <div id="reportView" class="hidden fixed inset-0 bg-white z-20 overflow-y-auto">
+        <header class="bg-blue-600 text-white p-4 sticky top-0 flex justify-between items-center">
+            <button onclick="backToDashboard()" class="font-bold">＜ 戻る</button>
+            <div id="activeStudentInfo" class="text-center leading-tight">
+                <div id="viewStudentName" class="text-lg font-bold"></div>
+                <div id="viewSubInfo" class="text-xs opacity-80"></div>
+            </div>
+            <div class="w-10"></div>
+        </header>
+        
+        <div class="p-4 space-y-6">
+            <div class="bg-orange-50 p-4 rounded-lg border-2 border-orange-200 text-center">
+                <p class="text-sm font-bold text-orange-700 mb-2">① 写真を準備（縦3枚連結）</p>
+                <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm">
+            </div>
+
+            <button id="saveBtn" onclick="saveReport()" class="w-full bg-blue-600 text-white py-4 rounded-xl text-xl font-bold shadow-lg">
+                報告書を保存して完了
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbw5nrIhB1VGihn7vomC6zKG7ViBXxRJQ_0aSrTX_3HdU4u9D-0CuHinX8XhA5tu3KqSsw/exec";
+        let scheduleData = [];
+        let doneList = JSON.parse(localStorage.getItem('doneList') || "[]");
+
+        // 起動時にデータを読み込む
+        window.onload = loadData;
+
+        async function loadData() {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = '<div class="text-center py-10">最新の座席表を取得中...</div>';
+            
+            try {
+                const res = await fetch(GAS_URL);
+                const data = await res.json();
+                scheduleData = data.schedule;
+                renderCards(scheduleData);
+            } catch (e) {
+                container.innerHTML = '<div class="text-red-500 text-center py-10">読み込み失敗。更新ボタンを押してください。</div>';
+            }
+        }
+
+        function renderCards(list) {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = "";
+            
+            list.forEach(item => {
+                const isDone = doneList.includes(item.student + item.teacher);
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl shadow-sm border bg-white cursor-pointer ${isDone ? 'card-done' : 'card-active'}`;
+                card.onclick = () => openReport(item);
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-2xl font-black mb-1">${item.student} <span class="text-sm font-normal">くん/さん</span></div>
+                            <div class="text-sm text-gray-600 font-bold">${item.teacher} 先生 / ${item.koma}</div>
+                        </div>
+                        ${isDone ? '<span class="bg-emerald-500 text-white text-xs px-2 py-1 rounded-full font-bold">済</span>' : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openReport(item) {
+            document.getElementById('viewStudentName').innerText = item.student;
+            document.getElementById('viewSubInfo').innerText = `${item.teacher} 先生 / ${item.koma}`;
+            document.getElementById('dashboardView').classList.add('hidden');
+            document.getElementById('reportView').classList.remove('hidden');
+            window.activeReportData = item;
+        }
+
+        function backToDashboard() {
+            document.getElementById('dashboardView').classList.remove('hidden');
+            document.getElementById('reportView').classList.add('hidden');
+            renderCards(scheduleData);
+        }
+
+        async function saveReport() {
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = "保存中... (約2秒)";
+            btn.disabled = true;
+
+            const report = {
+                student: window.activeReportData.student,
+                teacher: window.activeReportData.teacher,
+                koma: window.activeReportData.koma,
+                aiText: "ここにAI文章が入ります", // 実際にはV1のロジックで生成した文章
+                imageUrl: "https://..." // 写真URL
+            };
+
+            try {
+                await fetch(GAS_URL, {
+                    method: "POST",
+                    body: JSON.stringify(report)
+                });
+                
+                // 完了リストに追加
+                doneList.push(report.student + report.teacher);
+                localStorage.setItem('doneList', JSON.stringify(doneList));
+
+                alert("保存完了！ダッシュボードに戻ります。");
+                backToDashboard();
+            } catch (e) {
+                alert("保存に失敗しました。電波を確認してください。");
+            } finally {
+                btn.innerText = "報告書を保存して完了";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
