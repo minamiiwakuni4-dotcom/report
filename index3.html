@@ -114,11 +114,23 @@
             '国語': ['集中度', '理解度', '内容把握', '記述力']
         };
 
+        // --- 初期化 (URLからのキー自動設定機能付き) ---
         window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const keyFromUrl = urlParams.get('key');
+            
+            // URLに ?key=AIza... が含まれていたら保存する
+            if (keyFromUrl && keyFromUrl.startsWith('AIza')) {
+                localStorage.setItem('GEMINI_API_KEY', keyFromUrl);
+                // URLからキーを消して、綺麗なURLに戻す
+                window.history.replaceState({}, document.title, window.location.pathname);
+                alert('APIキーを自動設定しました！');
+            }
+
             const savedKey = localStorage.getItem('GEMINI_API_KEY');
             if (savedKey) document.getElementById('settings').style.display = 'none';
             loadData();
-        };
+         };
 
         function saveKey() {
             const key = document.getElementById('apiKeyInput').value;
