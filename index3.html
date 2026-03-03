@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>授業報告 V3.6.2 - URL Key & Perfect Theme</title>
+    <title>授業報告 V3.6.2 - Perfect Theme</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { --primary: #4a90e2; --success: #2ecc71; --bg: #f4f7f9; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; }
         
+        /* ボタン基本スタイル */
         .choice-btn { flex: 1; min-width: 60px; padding: 12px 2px; border: 2px solid #ddd; border-radius: 12px; background: white; cursor: pointer; font-size: 0.75rem; font-weight: 800; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .choice-btn span { font-size: 1.2rem; }
         .choice-btn.active { border-color: #3b82f6; background: white; color: #3b82f6; transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); border-width: 3px; }
         
+        /* 評価ボタン */
         .eval-good.active { background: #2ecc71 !important; color: white !important; border: none !important; }
         .eval-normal.active { background: #f1c40f !important; color: white !important; border: none !important; }
         .eval-effort.active { background: #e74c3c !important; color: white !important; border: none !important; }
         
+        /* 背景パターン（透かし） */
         .theme-wrapper { transition: all 0.5s ease; background-repeat: repeat; background-size: 120px; background-attachment: fixed; }
         .pattern-英語 { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='40' fill='%23ef4444' opacity='0.05' font-family='Arial' font-weight='bold' font-size='16'%3EABC%3C/text%3E%3C/svg%3E"); }
         .pattern-数学 { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='40' fill='%233b82f6' opacity='0.05' font-family='Arial' font-weight='bold' font-size='20'%3E+−×÷%3C/text%3E%3C/svg%3E"); }
@@ -47,7 +50,9 @@
             <button onclick="saveKey()" class="w-full mt-2 bg-slate-500 text-white p-2 rounded font-bold">キーを保存</button>
         </div>
 
-        <main id="cardContainer" class="p-4 grid grid-cols-1 gap-4"></main>
+        <main id="cardContainer" class="p-4 grid grid-cols-1 gap-4">
+            <div class="text-center py-10 text-gray-500">読み込み中...</div>
+        </main>
     </div>
 
     <div id="reportView" class="hidden fixed inset-0 bg-white z-20 overflow-y-auto">
@@ -71,17 +76,15 @@
             
             <div class="p-4 space-y-6">
                 <div id="evaluationContainer" class="p-5 rounded-3xl border-2 border-white/50 shadow-inner space-y-4 transition-colors duration-500"></div>
-
                 <div class="bg-white/80 border-2 border-dashed border-blue-300 rounded-2xl p-6 text-center shadow-sm">
                     <button onclick="document.getElementById('cameraInput').click()" class="bg-blue-600 text-white w-full py-5 rounded-2xl font-black shadow-lg active:scale-95 transition text-lg">📷 ノートを撮影</button>
                     <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this.files)">
                     <div class="preview-grid" id="previewGrid"></div>
                 </div>
-
                 <div class="space-y-4">
                     <div class="flex justify-between items-center px-1">
                         <span class="text-sm font-bold text-slate-600">AI作成の報告文</span>
-                        <button onclick="copyText()" class="text-xs bg-slate-400 text-white px-4 py-1.5 rounded-full font-bold">コピー</button>
+                        <button onclick="copyText()" class="text-xs bg-slate-500 text-white px-4 py-1.5 rounded-full font-bold">コピー</button>
                     </div>
                     <div id="loading" class="hidden text-center text-blue-600 font-bold animate-pulse py-2">🚀 AIが分析中...</div>
                     <textarea id="output" class="w-full h-56 p-4 border-2 border-white bg-white/70 rounded-3xl text-sm focus:border-blue-400 outline-none shadow-sm" placeholder="ここに生成されます"></textarea>
@@ -89,7 +92,6 @@
                 </div>
             </div>
         </div>
-
         <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t flex gap-4 z-[110]">
             <button id="generateBtn" onclick="runAI()" class="flex-1 bg-emerald-500 text-white py-4 rounded-2xl text-lg font-black shadow-xl active:bg-emerald-600 transition">AI報告作成</button>
             <button id="saveBtn" onclick="saveToSheet()" class="hidden flex-1 bg-blue-600 text-white py-4 rounded-2xl text-lg font-black shadow-xl active:bg-blue-700 transition">シートに保存</button>
@@ -114,15 +116,12 @@
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const keyFromUrl = urlParams.get('key');
-            
             if (keyFromUrl && keyFromUrl.startsWith('AIza')) {
                 localStorage.setItem('GEMINI_API_KEY', keyFromUrl.trim());
-                // URLからキーを消して見た目を綺麗にする
                 const newUrl = window.location.origin + window.location.pathname;
                 window.history.replaceState({}, document.title, newUrl);
                 alert("APIキーを自動設定しました！");
             }
-
             const savedKey = localStorage.getItem('GEMINI_API_KEY');
             if (savedKey) document.getElementById('settings').style.display = 'none';
             loadData();
@@ -144,7 +143,7 @@
                 const data = await res.json();
                 scheduleData = data.schedule;
                 renderCards(scheduleData);
-            } catch (e) { console.error("Data load error"); }
+            } catch (e) { console.error("Load error"); }
         }
 
         function renderCards(list) {
@@ -152,7 +151,6 @@
             container.innerHTML = "";
             const komaOrder = { 'Z': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4 };
             const sortedList = [...list].sort((a, b) => (komaOrder[a.koma]??99) - (komaOrder[b.koma]??99) || a.teacher.localeCompare(b.teacher, 'ja'));
-
             let curKoma = ""; let curT = ""; let kSec = null; let tBlk = null; let sGrid = null;
             sortedList.forEach(item => {
                 if (item.koma !== curKoma) {
@@ -228,35 +226,25 @@
         }
 
         async function runAI() {
-            let apiKey = localStorage.getItem('GEMINI_API_KEY');
-            if (!apiKey) { alert("APIキーを設定してください"); return; }
-            apiKey = apiKey.trim();
-            
-            if (photoList.length === 0) { alert("写真を撮ってください"); return; }
+            const apiKey = localStorage.getItem('GEMINI_API_KEY');
+            if (!apiKey) { alert("APIキーがありません"); return; }
             const loading = document.getElementById('loading'); const output = document.getElementById('output');
             loading.classList.remove('hidden'); output.value = "AI分析中...";
-
             try {
                 await mergeImages();
                 let evText = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
-                const prompt = `あなたは塾講師です。教科: ${selectedSubject}, 評価: ${evText} を元に保護者への報告書を作成してください。250字程度、ノート写真の分析を含めて。挨拶不要。`;
+                const prompt = `あなたは塾講師です。教科: ${selectedSubject}, 評価: ${evText} を元に保護者への報告書を作成。250字程度、ノート写真の分析を含む。挨拶不要。`;
                 const imageParts = photoList.map(d => ({ inlineData: { data: d.split(',')[1], mimeType: "image/jpeg" } }));
-                
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...imageParts] }] })
                 });
-                
                 const data = await res.json();
                 if (data.candidates) {
                     output.value = data.candidates[0].content.parts[0].text;
                     document.getElementById('saveBtn').classList.remove('hidden');
                 } else { throw new Error(JSON.stringify(data)); }
-            } catch (e) {
-                alert("AIエラー: " + e.message);
-                output.value = "エラーが発生しました。";
-            } finally { loading.classList.add('hidden'); }
+            } catch (e) { alert("AIエラー: " + e.message); } finally { loading.classList.add('hidden'); }
         }
 
         function handleFiles(fs) { for (let f of fs) { const r = new FileReader(); r.onload = (e) => { photoList.push(e.target.result); renderPreviews(); }; r.readAsDataURL(f); } }
