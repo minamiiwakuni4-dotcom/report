@@ -204,7 +204,6 @@ function renderCards(list) {
             teacherBlock = document.createElement('div');
             teacherBlock.className = "mb-8 last:mb-2";
             
-            // ★先生の名前を大きく（生徒名の1.5倍以上の存在感に）
             const tHeader = document.createElement('h3');
             tHeader.className = "text-2xl font-black text-slate-800 ml-1 mb-3 flex items-center tracking-tight";
             tHeader.innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full mr-3"></span>${currentTeacher} <span class="text-sm font-bold text-slate-500 ml-2">先生</span>`;
@@ -220,8 +219,8 @@ function renderCards(list) {
         const isDone = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
         const card = document.createElement('div');
         
-        // 生徒名のフォントサイズを基準に、カードのデザインを微調整
-        card.className = `p-3 rounded-2xl border-2 transition active:scale-95 cursor-pointer flex flex-col items-center justify-center min-h-[80px] ${
+        // ★【変更点】relative を追加し、中央配置の flex 設定に変更
+        card.className = `p-3 rounded-2xl border-2 transition active:scale-95 cursor-pointer flex items-center justify-center min-h-[80px] relative ${
             isDone 
             ? 'bg-emerald-50/50 border-emerald-400 opacity-60' 
             : 'bg-white border-white shadow-md hover:border-blue-300'
@@ -229,14 +228,15 @@ function renderCards(list) {
         
         card.onclick = () => openReport(item);
         
+        // ★【変更点】名前を中央に、済マークを absolute（絶対配置）で右下に
         card.innerHTML = `
-            <div class="text-lg font-bold text-slate-800 text-center leading-tight mb-1">${item.student}</div>
-            <div class="h-4 flex items-center justify-center">
-                ${isDone 
-                    ? '<span class="text-[10px] bg-emerald-500 text-white px-2.5 py-0.5 rounded-full font-black shadow-sm">済</span>' 
-                    : ''
-                }
+            <div class="text-lg font-bold text-slate-800 text-center leading-tight">
+                ${item.student}
             </div>
+            ${isDone 
+                ? '<span class="absolute bottom-2 right-2 text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-black shadow-sm">済</span>' 
+                : ''
+            }
         `;
         studentGrid.appendChild(card);
     });
