@@ -230,7 +230,7 @@ function renderCards(list) {
         card.onclick = () => openReport(item);
         
         card.innerHTML = `
-            <div class="text-base font-bold text-slate-800 text-center leading-tight mb-1">${item.student}</div>
+            <div class="text-lg font-bold text-slate-800 text-center leading-tight mb-1">${item.student}</div>
             <div class="h-4 flex items-center justify-center">
                 ${isDone 
                     ? '<span class="text-[10px] bg-emerald-500 text-white px-2.5 py-0.5 rounded-full font-black shadow-sm">済</span>' 
