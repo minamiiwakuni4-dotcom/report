@@ -236,11 +236,23 @@
 
     try {
         await mergeImages();
-        let evText = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
-        const prompt = `あなたは塾講師です。教科: ${selectedSubject}, 評価: ${evText} を元に保護者への報告書を作成してください。250字程度、ノート写真の分析を含めて。`;
-        const imageParts = photoList.map(d => ({ inlineData: { data: d.split(',')[1], mimeType: "image/jpeg" } }));
         
-        // ★プレイグラウンドの指定通り「gemini-3-flash-preview」を使用
+        // 評価項目をテキスト化
+        let evalText = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
+        
+        // ★ご指定いただいた詳細なプロンプトに戻しました
+        const prompt = `あなたは塾講師です。以下の情報を元に、保護者への授業報告書を作成してください。
+                    教科: ${selectedSubject}, 評価: ${evalText}。
+                    【制約事項】
+                    1. 挨拶や定型文は絶対に含めない。本文のみを250〜300字程度で作成。
+                    2. ノートの写真を分析した具体的な気づきを含める。
+                    3. 親しみやすくもプロフェッショナルな口調で。`;
+
+        const imageParts = photoList.map(d => ({ 
+            inlineData: { data: d.split(',')[1], mimeType: "image/jpeg" } 
+        }));
+        
+        // ★塾長が見つけてくださった「gemini-3-flash-preview」をしっかり維持！
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -252,12 +264,11 @@
             output.value = data.candidates[0].content.parts[0].text;
             document.getElementById('saveBtn').classList.remove('hidden');
         } else {
-            // エラー詳細をアラートで出す設定（デバッグ用）
             throw new Error(JSON.stringify(data));
         }
     } catch (e) {
         alert("AIエラー: " + e.message);
-        output.value = "エラー詳細: " + e.message;
+        output.value = "エラーが発生しました。再度お試しください。";
     } finally {
         loading.classList.add('hidden');
     }
