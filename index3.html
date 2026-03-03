@@ -183,7 +183,14 @@
             renderCards(filtered);
         }
 
-        function openReport(item) {
+       function openReport(item) {
+            // 【新設：入り口ロック】サーバーまたはローカルで「済」なら確認を出す
+            const isDone = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
+            if (isDone) {
+                const retry = confirm("⚠️ この生徒は報告済みです。内容を修正（上書き）しますか？");
+                if (!retry) return; // キャンセルなら何もしない
+            }
+
             window.activeReportData = item;
             document.getElementById('viewStudentName').innerText = item.student;
             document.getElementById('viewSubInfo').innerText = `${item.teacher} 先生 / ${item.koma}`;
@@ -324,41 +331,39 @@
         }
 
         async function saveToSheet(isForce = false) {
-    // ボタンクリック時のイベントオブジェクトが混入するのを防ぐ
-    const forceFlag = (isForce === true); 
-    
-    const saveBtn = document.getElementById('saveBtn');
-    const mergedImg = document.getElementById('mergedImagePreview');
-    
-    saveBtn.innerText = "保存中...";
-    saveBtn.disabled = true;
+            const saveBtn = document.getElementById('saveBtn');
+            const mergedImg = document.getElementById('mergedImagePreview');
+            
+            // 安全策：引数が Boolean でない（イベントオブジェクト等の）場合は false に固定
+            const forceFlag = (isForce === true);
+            
+            saveBtn.innerText = "保存中...";
+            saveBtn.disabled = true;
 
-    const payload = {
-        student: window.activeReportData.student,
-        teacher: window.activeReportData.teacher,
-        koma: window.activeReportData.koma,
-        subject: selectedSubject,
-        aiText: document.getElementById('output').value,
-        imageData: mergedImg.src,
-        force: forceFlag // ここで確実に true か false を送る
-    };
-    // （以下、try〜catchの処理はそのまま）
+            const payload = {
+                student: window.activeReportData.student,
+                teacher: window.activeReportData.teacher,
+                koma: window.activeReportData.koma,
+                subject: selectedSubject,
+                aiText: document.getElementById('output').value,
+                imageData: mergedImg.src,
+                force: forceFlag 
+            };
 
             try {
                 const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
                 const result = await res.json();
                 
                 if (result.result === "exists") {
-                    // 【安全ブレーキ】サーバー側ですでにデータがあると返ってきた場合
-                    const confirmOverwrite = confirm("⚠️ すでに別の報告書が保存されています。上書きして消去してもよろしいですか？");
+                    // 【出口ロック】サーバーから「既にあるよ」と返ってきた場合
+                    const confirmOverwrite = confirm("⚠️ 既に別の報告書が保存されています。本当に上書きして消去してもよろしいですか？");
                     if (confirmOverwrite) {
-                        saveToSheet(true); // OKならforceフラグを立てて再実行
-                        return;
+                        saveToSheet(true); // OKなら強制保存
                     }
                 } else if (result.result === "success") {
                     doneList.push(payload.student + payload.teacher + payload.koma);
                     localStorage.setItem('doneListV3', JSON.stringify(doneList));
-                    alert("保存完了！");
+                    alert("保存完了しました。");
                     backToDashboard();
                 }
             } catch (e) {
