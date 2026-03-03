@@ -265,7 +265,8 @@
 
     try {
         // お使いのAPIキーで、現在「本当に」呼び出し可能なモデルの一覧を取得します
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        // v1beta を v1 に書き換えるだけです
+const res = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
         const data = await res.json();
         
         if (data.models) {
