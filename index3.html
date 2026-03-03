@@ -154,11 +154,13 @@
             }
         }
 
-        function renderCards(list) {
+       function renderCards(list) {
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
             list.forEach(item => {
-                const isDone = doneList.includes(item.student + item.teacher + item.koma);
+                // 【安全装置】サーバー側の完了フラグ、またはこの端末での完了履歴を確認
+                const isDone = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
+                
                 const card = document.createElement('div');
                 card.className = `p-4 rounded-2xl shadow-sm border transition active:scale-95 cursor-pointer ${isDone ? 'card-done' : 'card-active'}`;
                 card.onclick = () => openReport(item);
@@ -321,11 +323,11 @@
             resultImg.classList.remove('hidden');
         }
 
-        async function saveToSheet() {
+        async function saveToSheet(isForce = false) {
             const saveBtn = document.getElementById('saveBtn');
             const mergedImg = document.getElementById('mergedImagePreview');
             
-            saveBtn.innerText = "写真を送信中... (約5秒)";
+            saveBtn.innerText = "保存中...";
             saveBtn.disabled = true;
 
             const payload = {
@@ -334,30 +336,34 @@
                 koma: window.activeReportData.koma,
                 subject: selectedSubject,
                 aiText: document.getElementById('output').value,
-                imageData: mergedImg.src
+                imageData: mergedImg.src,
+                force: isForce // 強制保存フラグ
             };
 
             try {
-                const res = await fetch(GAS_URL, {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
+                const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
                 const result = await res.json();
                 
-                if(result.result === "success") {
+                if (result.result === "exists") {
+                    // 【安全ブレーキ】サーバー側ですでにデータがあると返ってきた場合
+                    const confirmOverwrite = confirm("⚠️ すでに別の報告書が保存されています。上書きして消去してもよろしいですか？");
+                    if (confirmOverwrite) {
+                        saveToSheet(true); // OKならforceフラグを立てて再実行
+                        return;
+                    }
+                } else if (result.result === "success") {
                     doneList.push(payload.student + payload.teacher + payload.koma);
                     localStorage.setItem('doneListV3', JSON.stringify(doneList));
-                    alert("保存完了！シートにURLが入りました。");
+                    alert("保存完了！");
                     backToDashboard();
                 }
             } catch (e) {
-                alert("送信に失敗しました。電波の良い場所でやり直してください。");
+                alert("送信エラーが発生しました。");
             } finally {
                 saveBtn.innerText = "シートに保存して完了";
                 saveBtn.disabled = false;
             }
         }
-
         function copyText() {
             const out = document.getElementById('output');
             out.select();
