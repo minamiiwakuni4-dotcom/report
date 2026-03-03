@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>授業報告 V3.6.1 - Perfect Theme</title>
+    <title>授業報告 V3.6.1 - Final Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { --primary: #4a90e2; --success: #2ecc71; --bg: #f4f7f9; }
@@ -21,7 +21,6 @@
         
         /* 背景パターン（透かし） */
         .theme-wrapper { transition: all 0.5s ease; background-repeat: repeat; background-size: 120px; background-attachment: fixed; }
-        
         .pattern-英語 { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='40' fill='%23ef4444' opacity='0.05' font-family='Arial' font-weight='bold' font-size='16'%3EABC%3C/text%3E%3C/svg%3E"); }
         .pattern-数学 { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='40' fill='%233b82f6' opacity='0.05' font-family='Arial' font-weight='bold' font-size='20'%3E+−×÷%3C/text%3E%3C/svg%3E"); }
         .pattern-国語 { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='40' fill='%2392400e' opacity='0.05' font-family='Arial' font-weight='bold' font-size='16'%3Eあいう%3C/text%3E%3C/svg%3E"); }
@@ -51,14 +50,11 @@
             <button onclick="saveKey()" class="w-full mt-2 bg-slate-500 text-white p-2 rounded font-bold">キーを保存</button>
         </div>
 
-        <main id="cardContainer" class="p-4 grid grid-cols-1 gap-4">
-            <div class="text-center py-10 text-gray-500">読み込み中...</div>
-        </main>
+        <main id="cardContainer" class="p-4 grid grid-cols-1 gap-4"></main>
     </div>
 
     <div id="reportView" class="hidden fixed inset-0 bg-white z-20 overflow-y-auto">
         <div id="themeWrapper" class="theme-wrapper min-h-screen pb-32">
-            
             <header class="sticky top-0 z-[100] bg-white/90 backdrop-blur-md border-b shadow-sm p-4">
                 <div class="flex justify-between items-start mb-4">
                     <button onclick="backToDashboard()" class="text-slate-500 font-bold bg-slate-100 px-4 py-2 rounded-xl text-sm">＜ 戻る</button>
@@ -67,7 +63,6 @@
                         <div id="viewSubInfo" class="text-[10px] text-slate-500 mt-1"></div>
                     </div>
                 </div>
-                
                 <div class="flex gap-1" id="subjectGroup">
                     <button class="choice-btn active" onclick="changeSubject('英語', this)"><span>📕</span>英語</button>
                     <button class="choice-btn" onclick="changeSubject('数学', this)"><span>📘</span>数学</button>
@@ -81,24 +76,19 @@
                 <div id="evaluationContainer" class="p-5 rounded-3xl border-2 border-white/50 shadow-inner space-y-4 transition-colors duration-500"></div>
 
                 <div class="bg-white/80 border-2 border-dashed border-blue-300 rounded-2xl p-6 text-center shadow-sm">
-                    <button onclick="document.getElementById('cameraInput').click()" class="bg-blue-600 text-white w-full py-5 rounded-2xl font-black shadow-lg active:scale-95 transition text-lg flex items-center justify-center gap-2">
-                        <span>📷</span> ノートを撮影
-                    </button>
+                    <button onclick="document.getElementById('cameraInput').click()" class="bg-blue-600 text-white w-full py-5 rounded-2xl font-black shadow-lg active:scale-95 transition text-lg">📷 ノートを撮影</button>
                     <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this.files)">
                     <div class="preview-grid" id="previewGrid"></div>
                 </div>
 
-                <div id="aiSection" class="space-y-4">
+                <div class="space-y-4">
                     <div class="flex justify-between items-center px-1">
                         <span class="text-sm font-bold text-slate-600">AI作成の報告文</span>
                         <button onclick="copyText()" class="text-xs bg-slate-500 text-white px-4 py-1.5 rounded-full font-bold">コピー</button>
                     </div>
                     <div id="loading" class="hidden text-center text-blue-600 font-bold animate-pulse py-2">🚀 AIが分析中...</div>
-                    <textarea id="output" class="w-full h-56 p-4 border-2 border-white bg-white/70 rounded-3xl text-sm focus:border-blue-400 outline-none shadow-sm" placeholder="ここに文章が生成されます"></textarea>
-                    
-                    <div class="px-1 text-center">
-                        <img id="mergedImagePreview" class="hidden w-full max-w-sm mx-auto rounded-2xl border-4 border-white shadow-xl">
-                    </div>
+                    <textarea id="output" class="w-full h-56 p-4 border-2 border-white bg-white/70 rounded-3xl text-sm focus:border-blue-400 outline-none shadow-sm" placeholder="ここに生成されます"></textarea>
+                    <img id="mergedImagePreview" class="hidden w-full max-w-sm mx-auto rounded-2xl border-4 border-white shadow-xl">
                 </div>
             </div>
         </div>
@@ -117,20 +107,11 @@
         let selectedSubject = '英語';
         let currentEvals = {};
         const subjectConfig = {
-            '英語': ['集中度', '理解度', '文法理解', '語彙力'],
-            '数学': ['集中度', '理解度', '計算力', '記述力'],
-            '理科': ['集中度', '理解度', '用語公式暗記', '記述力'],
-            '社会': ['集中度', '理解度', '用語暗記', '記述力'],
+            '英語': ['集中度', '理解度', '文法理解', '語彙力'], '数学': ['集中度', '理解度', '計算力', '記述力'],
+            '理科': ['集中度', '理解度', '用語公式暗記', '記述力'], '社会': ['集中度', '理解度', '用語暗記', '記述力'],
             '国語': ['集中度', '理解度', '内容把握', '記述力']
         };
-
-        const subjectThemes = {
-            '英語': 'bg-red-100',
-            '数学': 'bg-blue-100',
-            '国語': 'bg-amber-100',
-            '理科': 'bg-emerald-100',
-            '社会': 'bg-purple-100'
-        };
+        const subjectThemes = { '英語': 'bg-red-100', '数学': 'bg-blue-100', '国語': 'bg-amber-100', '理科': 'bg-emerald-100', '社会': 'bg-purple-100' };
 
         window.onload = () => {
             const savedKey = localStorage.getItem('GEMINI_API_KEY');
@@ -139,77 +120,64 @@
         };
 
         function saveKey() {
-            const key = document.getElementById('apiKeyInput').value;
+            const key = document.getElementById('apiKeyInput').value.trim();
             if (key.startsWith('AIza')) {
                 localStorage.setItem('GEMINI_API_KEY', key);
                 document.getElementById('settings').style.display = 'none';
                 alert('保存完了！');
+                location.reload();
             } else { alert('正しいキーを入力してください。'); }
         }
 
         async function loadData() {
-            const container = document.getElementById('cardContainer');
             try {
                 const res = await fetch(GAS_URL);
                 const data = await res.json();
                 scheduleData = data.schedule;
                 renderCards(scheduleData);
-            } catch (e) {
-                container.innerHTML = '<div class="text-red-500 text-center py-10">エラー。再読み込みしてください。</div>';
-            }
+            } catch (e) { alert("データ取得エラー"); }
         }
 
         function renderCards(list) {
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
             const komaOrder = { 'Z': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4 };
-            const sortedList = [...list].sort((a, b) => {
-                const orderA = komaOrder[a.koma] ?? 99;
-                const orderB = komaOrder[b.koma] ?? 99;
-                if (orderA !== orderB) return orderA - orderB;
-                return a.teacher.localeCompare(b.teacher, 'ja');
-            });
+            const sortedList = [...list].sort((a, b) => (komaOrder[a.koma]??99) - (komaOrder[b.koma]??99) || a.teacher.localeCompare(b.teacher, 'ja'));
 
-            const komaStyles = {'Z': 'bg-purple-50', 'A': 'bg-blue-50', 'B': 'bg-emerald-50', 'C': 'bg-orange-50'};
-            let currentKoma = ""; let currentTeacher = ""; let komaSection = null; let teacherBlock = null; let studentGrid = null;
-
+            let curKoma = ""; let curT = ""; let kSec = null; let tBlk = null; let sGrid = null;
             sortedList.forEach(item => {
-                if (item.koma !== currentKoma) {
-                    currentKoma = item.koma; currentTeacher = "";
-                    komaSection = document.createElement('div');
-                    komaSection.className = `col-span-full mb-10 p-5 rounded-[2rem] border-2 ${komaStyles[currentKoma] || 'bg-gray-50'}`;
-                    komaSection.innerHTML = `<h2 class="text-xl font-black text-slate-700 mb-6 flex items-center"><span class="bg-white px-5 py-1.5 rounded-full shadow-sm border border-slate-200">${currentKoma}コマ</span></h2>`;
-                    container.appendChild(komaSection);
+                if (item.koma !== curKoma) {
+                    curKoma = item.koma; curT = "";
+                    kSec = document.createElement('div');
+                    kSec.className = `mb-10 p-5 rounded-[2rem] border-2 ${item.koma==='Z'?'bg-purple-50':item.koma==='A'?'bg-blue-50':item.koma==='B'?'bg-emerald-50':'bg-orange-50'}`;
+                    kSec.innerHTML = `<h2 class="text-xl font-black mb-6"><span class="bg-white px-5 py-1.5 rounded-full border">${curKoma}コマ</span></h2>`;
+                    container.appendChild(kSec);
                 }
-                if (item.teacher !== currentTeacher) {
-                    currentTeacher = item.teacher;
-                    teacherBlock = document.createElement('div');
-                    teacherBlock.className = "mb-8 last:mb-2";
-                    teacherBlock.innerHTML = `<h3 class="text-2xl font-black text-slate-800 ml-1 mb-3 flex items-center"><span class="w-2 h-6 bg-blue-600 rounded-full mr-3"></span>${currentTeacher} <span class="text-sm font-bold text-slate-500 ml-2">先生</span></h3>`;
-                    studentGrid = document.createElement('div');
-                    studentGrid.className = "grid grid-cols-2 sm:grid-cols-4 gap-3";
-                    teacherBlock.appendChild(studentGrid);
-                    komaSection.appendChild(teacherBlock);
+                if (item.teacher !== curT) {
+                    curT = item.teacher;
+                    tBlk = document.createElement('div');
+                    tBlk.className = "mb-8 last:mb-2";
+                    tBlk.innerHTML = `<h3 class="text-2xl font-black ml-1 mb-3 flex items-center"><span class="w-2 h-6 bg-blue-600 rounded-full mr-3"></span>${curT} <span class="text-sm font-bold text-slate-500 ml-2">先生</span></h3>`;
+                    sGrid = document.createElement('div'); sGrid.className = "grid grid-cols-2 sm:grid-cols-4 gap-3";
+                    tBlk.appendChild(sGrid); kSec.appendChild(tBlk);
                 }
-                const isDone = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
+                const isD = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
                 const card = document.createElement('div');
-                card.className = `p-3 rounded-2xl border-2 transition active:scale-95 cursor-pointer flex items-center justify-center min-h-[80px] relative ${isDone ? 'bg-emerald-50/50 border-emerald-400 opacity-60' : 'bg-white border-white shadow-md'}`;
+                card.className = `p-3 rounded-2xl border-2 transition active:scale-95 cursor-pointer flex items-center justify-center min-h-[80px] relative ${isD ? 'bg-emerald-50/50 border-emerald-400 opacity-60' : 'bg-white border-white shadow-md'}`;
                 card.onclick = () => openReport(item);
-                card.innerHTML = `<div class="text-lg font-bold text-slate-800 text-center leading-tight">${item.student}</div>${isDone ? '<span class="absolute bottom-2 right-2 text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-black">済</span>' : ''}`;
-                studentGrid.appendChild(card);
+                card.innerHTML = `<div class="text-lg font-bold text-center">${item.student}</div>${isD?'<span class="absolute bottom-2 right-2 text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-black">済</span>':''}`;
+                sGrid.appendChild(card);
             });
         }
 
         function openReport(item) {
-            const isDone = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
-            if (isDone && !confirm("⚠️ 報告済みです。上書きしますか？")) return;
+            const isD = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
+            if (isD && !confirm("既に報告済みです。上書きしますか？")) return;
             window.activeReportData = item;
             document.getElementById('viewStudentName').innerText = item.student;
             document.getElementById('viewSubInfo').innerText = `${item.teacher} 先生 / ${item.koma}コマ`;
-            photoList = [];
-            document.getElementById('previewGrid').innerHTML = '';
-            document.getElementById('output').value = '';
-            document.getElementById('mergedImagePreview').classList.add('hidden');
+            photoList = []; document.getElementById('previewGrid').innerHTML = '';
+            document.getElementById('output').value = ''; document.getElementById('mergedImagePreview').classList.add('hidden');
             document.getElementById('saveBtn').classList.add('hidden');
             document.getElementById('dashboardView').classList.add('hidden');
             document.getElementById('reportView').classList.remove('hidden');
@@ -221,26 +189,20 @@
             selectedSubject = subject;
             document.querySelectorAll('#subjectGroup .choice-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            const wrapper = document.getElementById('themeWrapper');
-            const evalContainer = document.getElementById('evaluationContainer');
-            Object.keys(subjectThemes).forEach(s => {
-                wrapper.classList.remove(subjectThemes[s], `pattern-${s}`);
-                evalContainer.classList.remove(subjectThemes[s]);
-            });
-            const themeClass = subjectThemes[subject];
-            wrapper.classList.add(themeClass, `pattern-${subject}`);
-            evalContainer.classList.add(themeClass);
+            const wrap = document.getElementById('themeWrapper'); const ev = document.getElementById('evaluationContainer');
+            Object.keys(subjectThemes).forEach(s => { wrap.classList.remove(subjectThemes[s], `pattern-${s}`); ev.classList.remove(subjectThemes[s]); });
+            wrap.classList.add(subjectThemes[subject], `pattern-${subject}`);
+            ev.classList.add(subjectThemes[subject]);
             renderEvaluationRows(subject);
         }
 
         function renderEvaluationRows(subject) {
-            const container = document.getElementById('evaluationContainer');
-            container.innerHTML = '';
+            const container = document.getElementById('evaluationContainer'); container.innerHTML = '';
             currentEvals = {};
             subjectConfig[subject].forEach(item => {
                 currentEvals[item] = '良い';
                 const row = document.createElement('div');
-                row.innerHTML = `<span class="text-xs font-black text-slate-500 block mb-2 uppercase tracking-wider">${item}</span>
+                row.innerHTML = `<span class="text-xs font-black text-slate-500 block mb-2 uppercase">${item}</span>
                     <div class="flex gap-2">
                         <button class="choice-btn eval-good active" onclick="setEval('${item}', '良い', this)">良い</button>
                         <button class="choice-btn eval-normal" onclick="setEval('${item}', '普通', this)">普通</button>
@@ -257,64 +219,64 @@
         }
 
         async function runAI() {
-    let apiKey = localStorage.getItem('GEMINI_API_KEY');
-    
-    // 前後の空白を自動で削除する魔法の1行
-    apiKey = apiKey.trim(); 
-    localStorage.setItem('GEMINI_API_KEY', apiKey);
+            let apiKey = localStorage.getItem('GEMINI_API_KEY');
+            if (!apiKey) { alert("APIキーを設定してください"); return; }
+            apiKey = apiKey.trim(); // 余計な空白を削除
+            
+            if (photoList.length === 0) { alert("写真を撮ってください"); return; }
+            const loading = document.getElementById('loading'); const output = document.getElementById('output');
+            loading.classList.remove('hidden'); output.value = "AI分析中...";
 
-    alert("キーの文字数は " + apiKey.length + " 文字です。正しいですか？");
-            const apiKey = localStorage.getItem('GEMINI_API_KEY');
-    if (!apiKey) { alert("APIキーがありません"); return; }
-    
-    const output = document.getElementById('output');
-    output.value = "有効なモデルを確認中...";
-
-    try {
-        // お使いのAPIキーで、現在「本当に」呼び出し可能なモデルの一覧を取得します
-        // v1beta を v1 に書き換えるだけです
-const res = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
-        const data = await res.json();
-        
-        if (data.models) {
-            // models/gemini-xxx という名前から 'models/' を取って綺麗にします
-            const names = data.models.map(m => m.name.replace('models/', '')).join('\n');
-            alert("🌟 以下のモデル名が使用可能です：\n\n" + names);
-            console.log(data.models);
-        } else {
-            alert("モデルが見つかりませんでした。APIキーの権限設定を確認してください。\n" + JSON.stringify(data));
+            try {
+                await mergeImages();
+                let evText = Object.entries(currentEvals).map(([k, v]) => `${k}:${v}`).join(', ');
+                const prompt = `あなたは塾講師です。教科: ${selectedSubject}, 評価: ${evText} を元に保護者への報告書を作成してください。250字程度、ノート写真の分析を含めて。`;
+                const imageParts = photoList.map(d => ({ inlineData: { data: d.split(',')[1], mimeType: "image/jpeg" } }));
+                
+                // 有料枠でもっとも安定する v1beta エンドポイントを使用
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...imageParts] }] })
+                });
+                
+                const data = await res.json();
+                if (data.candidates) {
+                    output.value = data.candidates[0].content.parts[0].text;
+                    document.getElementById('saveBtn').classList.remove('hidden');
+                } else {
+                    throw new Error(JSON.stringify(data));
+                }
+            } catch (e) {
+                alert("AIエラー: " + e.message);
+                output.value = "エラーが発生しました。APIキーまたはネットワークを確認してください。";
+            } finally { loading.classList.add('hidden'); }
         }
-    } catch (e) {
-        alert("通信エラーが発生しました：\n" + e.message);
-    }
-}
 
-        // --- 以下、既存の補助関数 ---
-        function handleFiles(files) { for (let file of files) { const reader = new FileReader(); reader.onload = (e) => { photoList.push(e.target.result); renderPreviews(); }; reader.readAsDataURL(file); } }
-        function renderPreviews() { const grid = document.getElementById('previewGrid'); grid.innerHTML = ''; photoList.forEach((src, index) => { const div = document.createElement('div'); div.className = 'preview-item'; div.innerHTML = `<img src="${src}"><button class="del-btn" onclick="removePhoto(${index})">✕</button>`; grid.appendChild(div); }); }
-        function removePhoto(index) { photoList.splice(index, 1); renderPreviews(); }
+        function handleFiles(fs) { for (let f of fs) { const r = new FileReader(); r.onload = (e) => { photoList.push(e.target.result); renderPreviews(); }; r.readAsDataURL(f); } }
+        function renderPreviews() { const g = document.getElementById('previewGrid'); g.innerHTML = ''; photoList.forEach((s, i) => { const d = document.createElement('div'); d.className = 'preview-item'; d.innerHTML = `<img src="${s}"><button class="del-btn" onclick="removePhoto(${i})">✕</button>`; g.appendChild(d); }); }
+        function removePhoto(i) { photoList.splice(i, 1); renderPreviews(); }
         async function mergeImages() {
             const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-            const images = await Promise.all(photoList.map(src => new Promise(resolve => { const img = new Image(); img.onload = () => resolve(img); img.src = src; })));
-            const targetWidth = 1000; let totalHeight = 0;
-            const resized = images.map(img => { const h = (targetWidth / img.width) * img.height; totalHeight += h; return { img, h }; });
-            canvas.width = targetWidth; canvas.height = totalHeight;
-            let currentY = 0; resized.forEach(item => { ctx.drawImage(item.img, 0, currentY, targetWidth, item.h); currentY += item.h; });
+            const imgs = await Promise.all(photoList.map(s => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = s; })));
+            const w = 1000; let th = 0; const rs = imgs.map(i => { const h = (w / i.width) * i.height; th += h; return { i, h }; });
+            canvas.width = w; canvas.height = th;
+            let cy = 0; rs.forEach(it => { ctx.drawImage(it.i, 0, cy, w, it.h); cy += it.h; });
             document.getElementById('mergedImagePreview').src = canvas.toDataURL('image/jpeg', 0.8);
             document.getElementById('mergedImagePreview').classList.remove('hidden');
         }
-        async function saveToSheet(isForce = false) {
-            const payload = { student: window.activeReportData.student, teacher: window.activeReportData.teacher, koma: window.activeReportData.koma, subject: selectedSubject, aiText: document.getElementById('output').value, imageData: document.getElementById('mergedImagePreview').src, force: isForce };
+        async function saveToSheet(f = false) {
+            const p = { student: window.activeReportData.student, teacher: window.activeReportData.teacher, koma: window.activeReportData.koma, subject: selectedSubject, aiText: document.getElementById('output').value, imageData: document.getElementById('mergedImagePreview').src, force: f };
             try {
-                const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
-                const result = await res.json();
-                if (result.result === "exists") { if (confirm("既に保存されています。上書きしますか？")) saveToSheet(true); }
-                else { doneList.push(payload.student + payload.teacher + payload.koma); localStorage.setItem('doneListV3', JSON.stringify(doneList)); alert("完了！"); backToDashboard(); }
+                const r = await fetch(GAS_URL, { method: "POST", body: JSON.stringify(p) });
+                const res = await r.json();
+                if (res.result === "exists") { if (confirm("既に保存されています。上書きしますか？")) saveToSheet(true); }
+                else { doneList.push(p.student + p.teacher + p.koma); localStorage.setItem('doneListV3', JSON.stringify(doneList)); alert("完了！"); backToDashboard(); }
             } catch (e) { alert("送信エラー"); }
         }
-        function backToDashboard() { document.getElementById('dashboardView').classList.remove('hidden'); document.getElementById('reportView').classList.add('hidden'); renderCards(scheduleData); }
-        function copyText() { const out = document.getElementById('output'); out.select(); navigator.clipboard.writeText(out.value); alert("コピー完了"); }
-        function searchStudent() { const term = document.getElementById('studentSearch').value.toLowerCase(); renderCards(scheduleData.filter(i => i.student.toLowerCase().includes(term))); }
+        function backToDashboard() { document.getElementById('dashboardView').classList.remove('hidden'); document.getElementById('reportView').classList.add('hidden'); loadData(); }
+        function copyText() { const o = document.getElementById('output'); o.select(); navigator.clipboard.writeText(o.value); alert("コピー完了"); }
+        function searchStudent() { const t = document.getElementById('studentSearch').value.toLowerCase(); renderCards(scheduleData.filter(i => i.student.toLowerCase().includes(t))); }
     </script>
 </body>
 </html>
