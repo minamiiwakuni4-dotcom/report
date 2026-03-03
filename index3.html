@@ -160,10 +160,8 @@ function renderCards(list) {
     const container = document.getElementById('cardContainer');
     container.innerHTML = "";
 
-    // 1. コマの優先順位 (Zを先頭にする)
     const komaOrder = { 'Z': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4 };
     
-    // 2. コマ順 > 先生順 でソート
     const sortedList = [...list].sort((a, b) => {
         const orderA = komaOrder[a.koma] ?? 99;
         const orderB = komaOrder[b.koma] ?? 99;
@@ -171,7 +169,6 @@ function renderCards(list) {
         return a.teacher.localeCompare(b.teacher, 'ja');
     });
 
-    // 3. コマごとに背景色を設定
     const komaStyles = {
         'Z': 'bg-purple-50 border-purple-100',
         'A': 'bg-blue-50 border-blue-100',
@@ -186,35 +183,33 @@ function renderCards(list) {
     let studentGrid = null;
 
     sortedList.forEach(item => {
-        // --- コマが切り替わった時の処理 ---
         if (item.koma !== currentKoma) {
             currentKoma = item.koma;
-            currentTeacher = ""; // コマが変わったら先生もリセット
+            currentTeacher = ""; 
 
             komaSection = document.createElement('div');
-            komaSection.className = `col-span-full mb-8 p-4 rounded-3xl border-2 ${komaStyles[currentKoma] || 'bg-gray-50'}`;
+            komaSection.className = `col-span-full mb-10 p-5 rounded-[2rem] border-2 ${komaStyles[currentKoma] || 'bg-gray-50'}`;
             
             const header = document.createElement('h2');
-            header.className = "text-xl font-black text-slate-700 mb-4 flex items-center";
-            header.innerHTML = `<span class="bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">${currentKoma}コマ</span>`;
+            header.className = "text-xl font-black text-slate-700 mb-6 flex items-center";
+            header.innerHTML = `<span class="bg-white px-5 py-1.5 rounded-full shadow-sm border border-slate-200">${currentKoma}コマ</span>`;
             komaSection.appendChild(header);
             
             container.appendChild(komaSection);
         }
 
-        // --- 先生が切り替わった時の処理（ここで強制改行） ---
         if (item.teacher !== currentTeacher) {
             currentTeacher = item.teacher;
 
             teacherBlock = document.createElement('div');
-            teacherBlock.className = "mb-6 last:mb-0";
+            teacherBlock.className = "mb-8 last:mb-2";
             
+            // ★先生の名前を大きく（生徒名の1.5倍以上の存在感に）
             const tHeader = document.createElement('h3');
-            tHeader.className = "text-xs font-bold text-slate-500 ml-2 mb-2 flex items-center";
-            tHeader.innerHTML = `<span class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>${currentTeacher} 先生`;
+            tHeader.className = "text-2xl font-black text-slate-800 ml-1 mb-3 flex items-center tracking-tight";
+            tHeader.innerHTML = `<span class="w-2 h-6 bg-blue-600 rounded-full mr-3"></span>${currentTeacher} <span class="text-sm font-bold text-slate-500 ml-2">先生</span>`;
             teacherBlock.appendChild(tHeader);
 
-            // 1列4人のグリッドを作成
             studentGrid = document.createElement('div');
             studentGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3";
             teacherBlock.appendChild(studentGrid);
@@ -222,24 +217,24 @@ function renderCards(list) {
             komaSection.appendChild(teacherBlock);
         }
 
-        // --- 生徒カードの作成 ---
         const isDone = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
         const card = document.createElement('div');
         
-        card.className = `p-3 rounded-xl border-2 transition active:scale-95 cursor-pointer flex flex-col justify-center min-h-[70px] ${
+        // 生徒名のフォントサイズを基準に、カードのデザインを微調整
+        card.className = `p-3 rounded-2xl border-2 transition active:scale-95 cursor-pointer flex flex-col items-center justify-center min-h-[80px] ${
             isDone 
-            ? 'bg-slate-100 border-emerald-400 opacity-60' 
-            : 'bg-white border-white shadow-sm hover:border-blue-300'
+            ? 'bg-emerald-50/50 border-emerald-400 opacity-60' 
+            : 'bg-white border-white shadow-md hover:border-blue-300'
         }`;
         
         card.onclick = () => openReport(item);
         
         card.innerHTML = `
-            <div class="text-sm font-black text-slate-800 text-center leading-tight mb-1">${item.student}</div>
-            <div class="flex justify-center items-center">
+            <div class="text-base font-bold text-slate-800 text-center leading-tight mb-1">${item.student}</div>
+            <div class="h-4 flex items-center justify-center">
                 ${isDone 
-                    ? '<span class="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold">済</span>' 
-                    : '<span class="text-[9px] text-slate-300 font-bold uppercase tracking-wider">Wait</span>'
+                    ? '<span class="text-[10px] bg-emerald-500 text-white px-2.5 py-0.5 rounded-full font-black shadow-sm">済</span>' 
+                    : ''
                 }
             </div>
         `;
@@ -247,10 +242,9 @@ function renderCards(list) {
     });
 
     if (list.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400 font-bold">生徒データがありません</div>';
+        container.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400 font-bold">本日の座席表データがありません</div>';
     }
 }
-
         function searchStudent() {
             const term = document.getElementById('studentSearch').value.toLowerCase();
             const filtered = scheduleData.filter(i => i.student.toLowerCase().includes(term));
