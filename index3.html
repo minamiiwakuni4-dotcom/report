@@ -257,7 +257,14 @@
         }
 
         async function runAI() {
-    const apiKey = localStorage.getItem('GEMINI_API_KEY');
+    let apiKey = localStorage.getItem('GEMINI_API_KEY');
+    
+    // 前後の空白を自動で削除する魔法の1行
+    apiKey = apiKey.trim(); 
+    localStorage.setItem('GEMINI_API_KEY', apiKey);
+
+    alert("キーの文字数は " + apiKey.length + " 文字です。正しいですか？");
+            const apiKey = localStorage.getItem('GEMINI_API_KEY');
     if (!apiKey) { alert("APIキーがありません"); return; }
     
     const output = document.getElementById('output');
