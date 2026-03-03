@@ -374,9 +374,12 @@
                 const data = await response.json();
                 output.value = data.candidates[0].content.parts[0].text;
                 document.getElementById('saveBtn').classList.remove('hidden');
-            } catch (e) {
-                output.value = "エラーが発生しました。もう一度お試しください。";
-            } finally {
+           // --- 修正後：原因を画面に出す ---
+} catch (e) {
+    console.error(e); // ブラウザのログに詳細を出す
+    output.value = "エラー詳細: " + e.message; 
+    alert("エラーが発生しました: " + e); // iPadでも原因が見えるように
+} finally {
                 loading.classList.add('hidden');
                 genBtn.disabled = false;
             }
