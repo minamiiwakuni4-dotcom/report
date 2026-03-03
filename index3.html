@@ -160,77 +160,94 @@ function renderCards(list) {
     const container = document.getElementById('cardContainer');
     container.innerHTML = "";
 
-    // 1. コマの優先順位を定義 (Zを一番前に)
+    // 1. コマの優先順位 (Zを先頭にする)
     const komaOrder = { 'Z': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4 };
     
-    // 2. データをソート (コマ順 > 先生順)
+    // 2. コマ順 > 先生順 でソート
     const sortedList = [...list].sort((a, b) => {
         const orderA = komaOrder[a.koma] ?? 99;
         const orderB = komaOrder[b.koma] ?? 99;
         if (orderA !== orderB) return orderA - orderB;
-        return a.teacher.localeCompare(b.teacher, 'ja'); // 先生名で50音順
+        return a.teacher.localeCompare(b.teacher, 'ja');
     });
 
-    // 3. コマごとにグループ化して表示
-    let currentKoma = "";
-    let komaSection = null;
-    let cardGrid = null;
-
-    // コマごとの背景色設定
-    const komaColors = {
-        'Z': 'bg-purple-50 border-purple-200',
-        'A': 'bg-blue-50 border-blue-200',
-        'B': 'bg-emerald-50 border-emerald-200',
-        'C': 'bg-orange-50 border-orange-200'
+    // 3. コマごとに背景色を設定
+    const komaStyles = {
+        'Z': 'bg-purple-50 border-purple-100',
+        'A': 'bg-blue-50 border-blue-100',
+        'B': 'bg-emerald-50 border-emerald-100',
+        'C': 'bg-orange-50 border-orange-100'
     };
 
+    let currentKoma = "";
+    let currentTeacher = "";
+    let komaSection = null;
+    let teacherBlock = null;
+    let studentGrid = null;
+
     sortedList.forEach(item => {
-        // コマが変わったら新しいセクション（見出し）を作る
+        // --- コマが切り替わった時の処理 ---
         if (item.koma !== currentKoma) {
             currentKoma = item.koma;
-            
-            // セクションの外枠
-            komaSection = document.createElement('div');
-            komaSection.className = `col-span-full mb-6 p-4 rounded-2xl border-2 ${komaColors[currentKoma] || 'bg-gray-50'}`;
-            
-            // コマの見出し
-            const header = document.createElement('h2');
-            header.className = "text-xl font-black text-slate-700 mb-3 flex items-center";
-            header.innerHTML = `<span class="bg-white px-3 py-1 rounded-full shadow-sm mr-2">${currentKoma}コマ</span>`;
-            komaSection.appendChild(header);
+            currentTeacher = ""; // コマが変わったら先生もリセット
 
-            // その中のカードグリッド (iPadなら3列、スマホなら2列)
-            cardGrid = document.createElement('div');
-            cardGrid.className = "grid grid-cols-2 lg:grid-cols-3 gap-3";
-            komaSection.appendChild(cardGrid);
+            komaSection = document.createElement('div');
+            komaSection.className = `col-span-full mb-8 p-4 rounded-3xl border-2 ${komaStyles[currentKoma] || 'bg-gray-50'}`;
+            
+            const header = document.createElement('h2');
+            header.className = "text-xl font-black text-slate-700 mb-4 flex items-center";
+            header.innerHTML = `<span class="bg-white px-4 py-1 rounded-full shadow-sm border border-slate-200">${currentKoma}コマ</span>`;
+            komaSection.appendChild(header);
             
             container.appendChild(komaSection);
         }
 
-        // カードの作成
+        // --- 先生が切り替わった時の処理（ここで強制改行） ---
+        if (item.teacher !== currentTeacher) {
+            currentTeacher = item.teacher;
+
+            teacherBlock = document.createElement('div');
+            teacherBlock.className = "mb-6 last:mb-0";
+            
+            const tHeader = document.createElement('h3');
+            tHeader.className = "text-xs font-bold text-slate-500 ml-2 mb-2 flex items-center";
+            tHeader.innerHTML = `<span class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>${currentTeacher} 先生`;
+            teacherBlock.appendChild(tHeader);
+
+            // 1列4人のグリッドを作成
+            studentGrid = document.createElement('div');
+            studentGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3";
+            teacherBlock.appendChild(studentGrid);
+            
+            komaSection.appendChild(teacherBlock);
+        }
+
+        // --- 生徒カードの作成 ---
         const isDone = item.isDoneServer || doneList.includes(item.student + item.teacher + item.koma);
         const card = document.createElement('div');
         
-        // タイルを少し小さく、先生名を強調
-        card.className = `p-3 rounded-xl shadow-sm border bg-white transition active:scale-95 cursor-pointer ${isDone ? 'opacity-50 grayscale border-emerald-500' : 'border-white'}`;
+        card.className = `p-3 rounded-xl border-2 transition active:scale-95 cursor-pointer flex flex-col justify-center min-h-[70px] ${
+            isDone 
+            ? 'bg-slate-100 border-emerald-400 opacity-60' 
+            : 'bg-white border-white shadow-sm hover:border-blue-300'
+        }`;
+        
         card.onclick = () => openReport(item);
         
         card.innerHTML = `
-            <div class="flex flex-col h-full justify-between">
-                <div>
-                    <div class="text-[10px] text-blue-600 font-bold mb-1 truncate">${item.teacher} 先生</div>
-                    <div class="text-lg font-bold text-slate-800 leading-tight">${item.student}</div>
-                </div>
-                <div class="flex justify-end mt-2">
-                    ${isDone ? '<span class="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold">済</span>' : '<span class="text-[10px] text-slate-400">未報告</span>'}
-                </div>
+            <div class="text-sm font-black text-slate-800 text-center leading-tight mb-1">${item.student}</div>
+            <div class="flex justify-center items-center">
+                ${isDone 
+                    ? '<span class="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold">済</span>' 
+                    : '<span class="text-[9px] text-slate-300 font-bold uppercase tracking-wider">Wait</span>'
+                }
             </div>
         `;
-        cardGrid.appendChild(card);
+        studentGrid.appendChild(card);
     });
 
     if (list.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">生徒が見つかりません</div>';
+        container.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400 font-bold">生徒データがありません</div>';
     }
 }
 
