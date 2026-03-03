@@ -158,7 +158,7 @@
             const container = document.getElementById('cardContainer');
             container.innerHTML = "";
             list.forEach(item => {
-                const isDone = doneList.includes(item.student + item.teacher);
+                const isDone = doneList.includes(item.student + item.teacher + item.koma);
                 const card = document.createElement('div');
                 card.className = `p-4 rounded-2xl shadow-sm border transition active:scale-95 cursor-pointer ${isDone ? 'card-done' : 'card-active'}`;
                 card.onclick = () => openReport(item);
@@ -345,7 +345,7 @@
                 const result = await res.json();
                 
                 if(result.result === "success") {
-                    doneList.push(payload.student + payload.teacher);
+                    doneList.push(payload.student + payload.teacher + payload.koma);
                     localStorage.setItem('doneListV3', JSON.stringify(doneList));
                     alert("保存完了！シートにURLが入りました。");
                     backToDashboard();
